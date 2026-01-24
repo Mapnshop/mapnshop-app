@@ -1,0 +1,36 @@
+{
+  "expo": {
+    "name": "MapNShop",
+    "slug": "mapnshop",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/mapnshop's_logo.png",
+    "scheme": "myapp",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "single",
+      "favicon": "./assets/images/mapnshop's_logo.png"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-font",
+      "expo-web-browser",
+      "expo-location",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "The app accesses your photos to add attachments to orders.",
+          "cameraPermission": "The app accesses your camera to add photo attachments to orders."
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
