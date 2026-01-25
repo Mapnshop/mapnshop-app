@@ -84,10 +84,10 @@ export const businessApi = {
       .from('businesses')
       .select('*')
       .eq('owner_id', ownerId)
-      .single();
+      .maybeSingle();
 
     if (error) throw new ApiError(error.message);
-    return data as Business;
+    return data as Business | null;
   },
 
   async update(id: string, updates: Partial<Business>) {
