@@ -1,4 +1,5 @@
-import { TouchableOpacity, Text, StyleSheet, ViewStyle, TextStyle, StyleProp, View } from 'react-native';
+import React from 'react';
+import { TouchableOpacity, Text, StyleSheet, ViewStyle, TextStyle, StyleProp, View, ActivityIndicator } from 'react-native';
 
 interface ButtonProps {
   title: string;
@@ -6,6 +7,7 @@ interface ButtonProps {
   variant?: 'primary' | 'secondary' | 'outline';
   size?: 'small' | 'medium' | 'large';
   disabled?: boolean;
+  loading?: boolean;
   style?: StyleProp<ViewStyle>;
   textStyle?: StyleProp<TextStyle>;
   icon?: React.ReactNode;
@@ -17,27 +19,37 @@ export function Button({
   variant = 'primary',
   size = 'medium',
   disabled = false,
+  loading = false,
   style,
   textStyle,
   icon
-}: ButtonProps & { textStyle?: StyleProp<TextStyle> }) {
+}: ButtonProps) {
   return (
     <TouchableOpacity
       style={[
         styles.button,
         styles[variant],
         styles[size],
-        disabled && styles.disabled,
+        (disabled || loading) && styles.disabled,
         style
       ]}
       onPress={onPress}
-      disabled={disabled}
+      disabled={disabled || loading}
     >
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-        {icon}
-        <Text style={[styles.text, styles[`${variant}Text`], styles[`${size}Text`], textStyle]}>
-          {title}
-        </Text>
+        {loading ? (
+          <ActivityIndicator
+            size="small"
+            color={variant === 'outline' ? '#3B82F6' : '#FFFFFF'}
+          />
+        ) : (
+          <>
+            {icon}
+            <Text style={[styles.text, styles[`${variant}Text`], styles[`${size}Text`], textStyle]}>
+              {title}
+            </Text>
+          </>
+        )}
       </View>
     </TouchableOpacity>
   );
