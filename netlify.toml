@@ -2,6 +2,12 @@
   command = "npm run build:web"
   publish = "dist"
 
+[build.environment]
+  # These EXPO_PUBLIC_* keys are intentionally exposed to the client-side bundle.
+  # The EXPO_PUBLIC_ prefix in Expo indicates these are designed for client use.
+  SECRETS_SCAN_OMIT_KEYS = "EXPO_PUBLIC_GOOGLE_MAPS_API_KEY,EXPO_PUBLIC_GOOGLE_PLACES_API_KEY,EXPO_PUBLIC_SUPABASE_ANON_KEY,EXPO_PUBLIC_SUPABASE_URL"
+
+
 [[redirects]]
   from = "/*"
   to = "/index.html"
