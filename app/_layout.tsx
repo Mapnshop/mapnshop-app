@@ -69,6 +69,22 @@ function RootLayoutNav() {
 export default function RootLayout() {
   useFrameworkReady();
 
+  // Safety Check for Environment Variables
+  const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL;
+  const supabaseKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!supabaseUrl || !supabaseKey || supabaseUrl.includes('placeholder')) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+        <Text style={{ fontSize: 20, fontWeight: 'bold', color: 'red', marginBottom: 10 }}>Deployment Error</Text>
+        <Text style={{ textAlign: 'center', fontSize: 16 }}>Missing Environment Variables</Text>
+        <Text style={{ textAlign: 'center', marginTop: 10, color: '#666' }}>
+          Please add EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_ANON_KEY to your Netlify Site Settings and trigger a deploy.
+        </Text>
+      </View>
+    );
+  }
+
   return (
     <AuthProvider>
       <BusinessProvider>
