@@ -4,7 +4,7 @@ import { StatusBar } from 'expo-status-bar';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import { BusinessProvider, useBusiness } from '@/contexts/BusinessContext';
 import { useFrameworkReady } from '@/hooks/useFrameworkReady';
-import { View, ActivityIndicator } from 'react-native';
+import { View, ActivityIndicator, Text } from 'react-native';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
 
