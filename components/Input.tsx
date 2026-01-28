@@ -1,5 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { TextInput, Text, View, StyleSheet, TextInputProps, ViewStyle } from 'react-native';
+import { Colors } from '@/constants/Colors';
+import { Layout } from '@/constants/Layout';
 
 interface InputProps extends TextInputProps {
   label?: string;
@@ -8,16 +10,21 @@ interface InputProps extends TextInputProps {
 }
 
 export function Input({ label, error, style, containerStyle, ...props }: InputProps) {
+  const [isFocused, setIsFocused] = useState(false);
+
   return (
     <View style={[styles.container, containerStyle]}>
       {label && <Text style={styles.label}>{label}</Text>}
       <TextInput
         style={[
           styles.input,
-          error && styles.inputError,
+          isFocused && styles.inputFocused,
+          error ? styles.inputError : undefined,
           style
         ]}
-        placeholderTextColor="#9CA3AF"
+        placeholderTextColor={Colors.text.placeholder}
+        onFocus={() => setIsFocused(true)}
+        onBlur={() => setIsFocused(false)}
         {...props}
       />
       {error && <Text style={styles.error}>{error}</Text>}
@@ -27,31 +34,35 @@ export function Input({ label, error, style, containerStyle, ...props }: InputPr
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: 16,
+    marginBottom: Layout.spacing.md,
     width: '100%',
-    maxWidth: 600,
   },
   label: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#374151',
-    marginBottom: 8,
+    fontSize: 14,
+    fontWeight: '500',
+    color: Colors.text.primary,
+    marginBottom: Layout.spacing.xs,
   },
   input: {
     borderWidth: 1,
-    borderColor: '#D1D5DB',
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    borderColor: Colors.border,
+    borderRadius: Layout.borderRadius.md,
+    paddingHorizontal: Layout.spacing.md,
+    paddingVertical: Layout.spacing.sm + 4, // ~12
     fontSize: 16,
-    backgroundColor: '#FFFFFF',
+    color: Colors.text.primary,
+    backgroundColor: Colors.background,
+  },
+  inputFocused: {
+    borderColor: Colors.primary,
+    // Could add subtle shadow/elevation here if appropriate, but keeping it flat for MVP
   },
   inputError: {
-    borderColor: '#EF4444',
+    borderColor: Colors.status.error,
   },
   error: {
-    color: '#EF4444',
-    fontSize: 14,
+    color: Colors.status.error,
+    fontSize: 12,
     marginTop: 4,
   },
 });

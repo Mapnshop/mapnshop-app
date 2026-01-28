@@ -1,10 +1,12 @@
 import React from 'react';
-import { TouchableOpacity, Text, StyleSheet, ViewStyle, TextStyle, StyleProp, View, ActivityIndicator } from 'react-native';
+import { TouchableOpacity, Text, StyleSheet, ViewStyle, TextStyle, StyleProp, View, ActivityIndicator, Animated } from 'react-native';
+import { Colors } from '@/constants/Colors';
+import { Layout } from '@/constants/Layout';
 
 interface ButtonProps {
   title: string;
   onPress: () => void;
-  variant?: 'primary' | 'secondary' | 'outline';
+  variant?: 'primary' | 'secondary' | 'outline' | 'ghost'; // Added ghost
   size?: 'small' | 'medium' | 'large';
   disabled?: boolean;
   loading?: boolean;
@@ -24,6 +26,8 @@ export function Button({
   textStyle,
   icon
 }: ButtonProps) {
+  // Simple press animation could go here, but keeping it simple for MVP first.
+
   return (
     <TouchableOpacity
       style={[
@@ -35,17 +39,23 @@ export function Button({
       ]}
       onPress={onPress}
       disabled={disabled || loading}
+      activeOpacity={0.7}
     >
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+      <View style={styles.contentContainer}>
         {loading ? (
           <ActivityIndicator
             size="small"
-            color={variant === 'outline' ? '#3B82F6' : '#FFFFFF'}
+            color={variant === 'outline' || variant === 'ghost' ? Colors.primary : Colors.primaryForeground}
           />
         ) : (
           <>
             {icon}
-            <Text style={[styles.text, styles[`${variant}Text`], styles[`${size}Text`], textStyle]}>
+            <Text style={[
+              styles.text,
+              styles[`${variant}Text` as keyof typeof styles],
+              styles[`${size}Text` as keyof typeof styles],
+              textStyle
+            ]}>
               {title}
             </Text>
           </>
@@ -57,55 +67,78 @@ export function Button({
 
 const styles = StyleSheet.create({
   button: {
-    borderRadius: 8,
+    borderRadius: Layout.borderRadius.md,
     alignItems: 'center',
     justifyContent: 'center',
+    // Minimal shadow for primary if needed, otherwise flat
+  },
+  contentContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Layout.spacing.sm,
   },
 
   // Variants
   primary: {
-    backgroundColor: '#3B82F6',
+    backgroundColor: Colors.primary,
+    borderWidth: 1,
+    borderColor: Colors.primary,
   },
   secondary: {
-    backgroundColor: '#6B7280',
+    backgroundColor: Colors.secondary,
+    borderWidth: 1,
+    borderColor: Colors.secondary,
   },
   outline: {
     backgroundColor: 'transparent',
     borderWidth: 1,
-    borderColor: '#3B82F6',
+    borderColor: Colors.border,
+  },
+  ghost: {
+    backgroundColor: 'transparent',
+    borderWidth: 0,
   },
 
   // Sizes
   small: {
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+    paddingHorizontal: Layout.spacing.md,
+    paddingVertical: Layout.spacing.xs,
+    minHeight: 36,
   },
   medium: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: Layout.spacing.lg,
+    paddingVertical: Layout.spacing.sm + 4, // ~12
+    minHeight: 48,
   },
   large: {
-    paddingHorizontal: 24,
-    paddingVertical: 16,
+    paddingHorizontal: Layout.spacing.xl,
+    paddingVertical: Layout.spacing.md,
+    minHeight: 56,
   },
 
   // Text styles
   text: {
     fontWeight: '600',
-  },
-  primaryText: {
-    color: '#FFFFFF',
-  },
-  secondaryText: {
-    color: '#FFFFFF',
-  },
-  outlineText: {
-    color: '#3B82F6',
+    textAlign: 'center',
   },
 
-  // Text sizes
+  // Text Colors
+  primaryText: {
+    color: Colors.primaryForeground,
+  },
+  secondaryText: {
+    color: Colors.secondaryForeground,
+  },
+  outlineText: {
+    color: Colors.text.primary,
+  },
+  ghostText: {
+    color: Colors.text.primary,
+  },
+
+  // Text Sizes
   smallText: {
-    fontSize: 14,
+    fontSize: 13,
   },
   mediumText: {
     fontSize: 16,

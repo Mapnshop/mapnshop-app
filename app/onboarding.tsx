@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Alert, KeyboardAvoidingView, Platform, TouchableOpacity, FlatList, SafeAreaView, Modal } from 'react-native';
+import { View, Text, StyleSheet, Alert, TouchableOpacity, FlatList, Modal, Platform } from 'react-native';
 import { useBusiness } from '@/contexts/BusinessContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { businessApi } from '@/lib/api';
 import { Input } from '@/components/Input';
 import { Button } from '@/components/Button';
 import { AddressAutocomplete } from '@/components/AddressAutocomplete';
-import { router } from 'expo-router';
+import { ScreenContainer } from '@/components/ScreenContainer';
 import * as Location from 'expo-location';
-import { ArrowLeft, LogOut, ChevronDown } from 'lucide-react-native';
+import { ArrowLeft, ChevronDown } from 'lucide-react-native';
+import { Colors } from '@/constants/Colors';
+import { Layout } from '@/constants/Layout';
 
 // Common country codes
 const COUNTRY_CODES = [
@@ -52,13 +54,12 @@ export default function OnboardingScreen() {
     lat: 0,
     lng: 0,
   });
-  const [countryCode, setCountryCode] = useState(COUNTRY_CODES[0] as typeof COUNTRY_CODES[number]); // Default to first (US)
+  const [countryCode, setCountryCode] = useState(COUNTRY_CODES[0] as typeof COUNTRY_CODES[number]);
   const [showCountryPicker, setShowCountryPicker] = useState(false);
 
   const handleSignOut = async () => {
     try {
       await signOut();
-      // Router redirection is handled by _layout
     } catch (error) {
       Alert.alert('Error', 'Failed to sign out');
     }
@@ -108,7 +109,6 @@ export default function OnboardingScreen() {
       });
 
       setBusiness(business);
-      // Navigation is handled by RootLayout
     } catch (error: any) {
       console.error('Onboarding error:', error);
       Alert.alert('Error', error.message || 'Failed to create business profile');
@@ -118,120 +118,110 @@ export default function OnboardingScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.topBar}>
+    <ScreenContainer scrollable>
+      <View style={styles.headerRow}>
         <TouchableOpacity onPress={handleSignOut} style={styles.backButton}>
-          <ArrowLeft size={24} color="rgba(55, 65, 81, 1)" />
+          <ArrowLeft size={24} color={Colors.text.primary} />
         </TouchableOpacity>
       </View>
 
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      >
-        <FlatList
-          data={[]}
-          renderItem={null}
-          contentContainerStyle={styles.scrollContent}
-          keyboardShouldPersistTaps="handled"
-          ListHeaderComponent={
-            <>
-              <View style={styles.header}>
-                <Text style={styles.title}>Setup Your Business</Text>
-                <Text style={styles.subtitle}>
-                  Let's get your business profile ready to start managing orders
-                </Text>
-              </View>
+      <View style={styles.header}>
+        <Text style={styles.title}>Setup Business</Text>
+        <Text style={styles.subtitle}>
+          Basic details to get you started.
+        </Text>
+      </View>
 
-              <View style={styles.form}>
-                <Input
-                  label="Business Name *"
-                  value={formData.name}
-                  onChangeText={(text) => setFormData({ ...formData, name: text })}
-                  placeholder="Enter your business name"
-                />
-
-                <View style={styles.inputGroup}>
-                  <Text style={styles.label}>Business Category *</Text>
-                  <View style={styles.categoryContainer}>
-                    {CATEGORIES.map((cat) => (
-                      <TouchableOpacity
-                        key={cat.id}
-                        style={[
-                          styles.categoryButton,
-                          formData.category === cat.id && styles.categoryButtonActive,
-                        ]}
-                        onPress={() => setFormData({ ...formData, category: cat.id })}
-                      >
-                        <Text
-                          style={[
-                            styles.categoryText,
-                            formData.category === cat.id && styles.categoryTextActive,
-                          ]}
-                        >
-                          {cat.label}
-                        </Text>
-                      </TouchableOpacity>
-                    ))}
-                  </View>
-                </View>
-
-                <View style={{ zIndex: 100 }}>
-                  <AddressAutocomplete
-                    label="Business Address *"
-                    placeholder="Search your business address"
-                    defaultValue={formData.address}
-                    onSelect={(data) => {
-                      setFormData({
-                        ...formData,
-                        address: data.address,
-                        lat: data.lat,
-                        lng: data.lng,
-                      });
-                    }}
-                  />
-                </View>
-
-                <View style={styles.inputGroup}>
-                  <Text style={styles.label}>Phone Number *</Text>
-                  <View style={{ flexDirection: 'row', gap: 12 }}>
-                    <TouchableOpacity
-                      style={styles.countryButton}
-                      onPress={() => setShowCountryPicker(true)}
-                    >
-                      <Text style={{ fontSize: 24 }}>{countryCode.flag}</Text>
-                      <Text style={styles.countryCodeText}>{countryCode.dial_code}</Text>
-                      <ChevronDown size={16} color="#6B7280" />
-                    </TouchableOpacity>
-
-                    <Input
-                      containerStyle={{ flex: 1, marginBottom: 0 }}
-                      value={formData.phone}
-                      onChangeText={(text) => setFormData({ ...formData, phone: text })}
-                      placeholder="Phone number"
-                      keyboardType="phone-pad"
-                    />
-                  </View>
-                </View>
-
-                <Input
-                  label="Opening Hours"
-                  value={formData.opening_hours}
-                  onChangeText={(text) => setFormData({ ...formData, opening_hours: text })}
-                  placeholder="e.g., Mon-Fri 9AM-6PM, Sat 10AM-4PM"
-                />
-
-                <Button
-                  title={loading ? 'Setting up...' : 'Complete Setup'}
-                  onPress={handleSubmit}
-                  disabled={loading}
-                  style={styles.submitButton}
-                />
-              </View>
-            </>
-          }
+      <View style={styles.form}>
+        <Input
+          label="Business Name *"
+          value={formData.name}
+          onChangeText={(text) => setFormData({ ...formData, name: text })}
+          placeholder="e.g. Joe's Market"
+          autoCapitalize="words"
         />
-      </KeyboardAvoidingView>
+
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>Category *</Text>
+          <View style={styles.categoryContainer}>
+            {CATEGORIES.map((cat) => (
+              <TouchableOpacity
+                key={cat.id}
+                style={[
+                  styles.categoryButton,
+                  formData.category === cat.id && styles.categoryButtonActive,
+                ]}
+                onPress={() => setFormData({ ...formData, category: cat.id })}
+              >
+                <Text
+                  style={[
+                    styles.categoryText,
+                    formData.category === cat.id && styles.categoryTextActive,
+                  ]}
+                >
+                  {cat.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+
+        <View style={{ zIndex: 100, marginBottom: Layout.spacing.md }}>
+          <AddressAutocomplete
+            label="Address *"
+            placeholder="Search address"
+            defaultValue={formData.address}
+            onSelect={(data) => {
+              setFormData({
+                ...formData,
+                address: data.address,
+                lat: data.lat,
+                lng: data.lng,
+              });
+            }}
+          />
+        </View>
+
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>Phone *</Text>
+          <View style={{ flexDirection: 'row', gap: Layout.spacing.sm }}>
+            <TouchableOpacity
+              style={styles.countryButton}
+              onPress={() => setShowCountryPicker(true)}
+            >
+              <Text style={{ fontSize: 20 }}>{countryCode.flag}</Text>
+              <Text style={styles.countryCodeText}>{countryCode.dial_code}</Text>
+              <ChevronDown size={14} color={Colors.text.secondary} />
+            </TouchableOpacity>
+
+            <View style={{ flex: 1 }}>
+              <Input
+                containerStyle={{ marginBottom: 0 }}
+                value={formData.phone}
+                onChangeText={(text) => setFormData({ ...formData, phone: text })}
+                placeholder="Mobile number"
+                keyboardType="phone-pad"
+              />
+            </View>
+          </View>
+        </View>
+
+        <Input
+          label="Opening Hours"
+          value={formData.opening_hours}
+          onChangeText={(text) => setFormData({ ...formData, opening_hours: text })}
+          placeholder="e.g. 9AM - 6PM"
+        />
+
+        <View style={styles.spacer} />
+
+        <Button
+          title={loading ? 'Creating...' : 'Create Business'}
+          onPress={handleSubmit}
+          disabled={loading}
+          size="large"
+        />
+      </View>
 
       <Modal
         visible={showCountryPicker}
@@ -267,148 +257,107 @@ export default function OnboardingScreen() {
           </View>
         </View>
       </Modal>
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F9FAFB',
-    paddingTop: Platform.OS === 'android' ? 30 : 0,
-  },
-  topBar: {
-    paddingHorizontal: 20,
-    paddingVertical: 30,
-    zIndex: 10,
-    width: '100%',
-    maxWidth: 600,
-    alignSelf: 'center',
+  headerRow: {
+    marginBottom: Layout.spacing.md,
   },
   backButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  backText: {
-    fontSize: 16,
-    color: '#374151',
-    fontWeight: '500',
-  },
-  scrollContent: {
-    padding: 20,
-    paddingTop: 0,
-    flexGrow: 1, // ensure it fills
-    width: '100%',
-    maxWidth: 600,
-    alignSelf: 'center',
-    ...Platform.select({
-      web: {
-        backgroundColor: '#FFFFFF',
-        borderRadius: 16,
-        padding: 40,
-        marginBottom: 40, // space at bottom
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.1,
-        shadowRadius: 12,
-      }
-    }),
+    padding: Layout.spacing.xs,
+    marginLeft: -Layout.spacing.xs,
   },
   header: {
-    alignItems: 'center',
-    marginBottom: 40,
-    marginTop: 20,
+    marginBottom: Layout.spacing.xl,
   },
   title: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: '700',
-    color: '#111827',
-    marginBottom: 8,
-    textAlign: 'center',
+    color: Colors.text.primary,
+    marginBottom: Layout.spacing.xs,
   },
   subtitle: {
     fontSize: 16,
-    color: '#6B7280',
-    textAlign: 'center',
-    lineHeight: 24,
+    color: Colors.text.secondary,
   },
   form: {
     gap: 0,
   },
   inputGroup: {
-    marginBottom: 16,
+    marginBottom: Layout.spacing.md,
   },
   label: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#374151',
-    marginBottom: 6,
+    color: Colors.text.primary,
+    marginBottom: Layout.spacing.xs,
   },
   categoryContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
+    gap: Layout.spacing.sm,
   },
   categoryButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingHorizontal: Layout.spacing.md,
+    paddingVertical: Layout.spacing.sm,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#D1D5DB',
-    backgroundColor: '#FFFFFF',
+    borderColor: Colors.border,
+    backgroundColor: Colors.background,
   },
   categoryButtonActive: {
-    borderColor: '#3B82F6',
-    backgroundColor: '#EFF6FF',
+    borderColor: Colors.primary,
+    backgroundColor: Colors.secondary,
   },
   categoryText: {
     fontSize: 14,
-    color: '#4B5563',
+    color: Colors.text.secondary,
   },
   categoryTextActive: {
-    color: '#3B82F6',
+    color: Colors.primary,
     fontWeight: '600',
-  },
-  submitButton: {
-    marginTop: 8,
   },
   countryButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 12, // Match Input padding
+    gap: 6,
+    paddingHorizontal: Layout.spacing.md,
+    height: 48, // Match input height roughly
     borderWidth: 1,
-    borderColor: '#D1D5DB',
-    borderRadius: 8,
-    backgroundColor: '#FFFFFF',
+    borderColor: Colors.border,
+    borderRadius: Layout.borderRadius.md,
+    backgroundColor: Colors.background,
   },
   countryCodeText: {
     fontSize: 16,
-    color: '#111827',
+    color: Colors.text.primary,
     fontWeight: '500',
+  },
+  spacer: {
+    height: Layout.spacing.lg,
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: 'rgba(0,0,0,0.4)',
     justifyContent: Platform.OS === 'web' ? 'center' : 'flex-end',
     alignItems: Platform.OS === 'web' ? 'center' : undefined,
   },
   modalContent: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: Colors.background,
     ...Platform.select({
       web: {
         width: '100%',
         maxWidth: 400,
-        height: 'auto',
+        height: '80%',
         maxHeight: 600,
-        borderRadius: 16,
-        paddingBottom: 0,
+        borderRadius: Layout.borderRadius.lg,
       },
       default: {
-        borderTopLeftRadius: 24,
-        borderTopRightRadius: 24,
-        height: '70%',
+        borderTopLeftRadius: Layout.borderRadius.xl,
+        borderTopRightRadius: Layout.borderRadius.xl,
+        maxHeight: '80%',
       }
     }),
     shadowColor: '#000',
@@ -421,35 +370,35 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 20,
+    padding: Layout.spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
+    borderBottomColor: Colors.border,
   },
   modalTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#111827',
+    color: Colors.text.primary,
   },
   closeButtonText: {
     fontSize: 16,
-    color: '#3B82F6',
+    color: Colors.status.info,
     fontWeight: '600',
   },
   countryItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
+    padding: Layout.spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: '#F3F4F6',
+    borderBottomColor: Colors.surface,
   },
   countryName: {
     flex: 1,
     fontSize: 16,
-    color: '#111827',
+    color: Colors.text.primary,
   },
   countryDialCode: {
     fontSize: 16,
-    color: '#6B7280',
+    color: Colors.text.secondary,
     fontWeight: '500',
   },
 });

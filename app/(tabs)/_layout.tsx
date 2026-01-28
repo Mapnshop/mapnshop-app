@@ -2,13 +2,15 @@ import { Tabs } from 'expo-router';
 import { Hop as Home, Inbox, Plus, ChartBar as BarChart3, Settings } from 'lucide-react-native';
 import { View, useWindowDimensions, Platform } from 'react-native';
 import { SideBar } from '@/components/SideBar';
+import { Colors } from '@/constants/Colors';
+import { Layout } from '@/constants/Layout';
 
 export default function TabLayout() {
   const { width } = useWindowDimensions();
   const isDesktop = width >= 768;
 
   return (
-    <View style={{ flex: 1, flexDirection: 'row' }}>
+    <View style={{ flex: 1, flexDirection: 'row', backgroundColor: Colors.background }}>
       {isDesktop && <SideBar />}
       <View style={{ flex: 1 }}>
         <Tabs
@@ -17,15 +19,17 @@ export default function TabLayout() {
             // Hide bottom tab bar on desktop
             tabBarStyle: {
               display: isDesktop ? 'none' : 'flex',
-              backgroundColor: '#FFFFFF',
+              backgroundColor: Colors.background,
               borderTopWidth: 1,
-              borderTopColor: '#E5E7EB',
-              paddingTop: 8,
-              paddingBottom: 8,
-              height: 80,
+              borderTopColor: Colors.border,
+              paddingTop: Layout.spacing.sm,
+              paddingBottom: Platform.OS === 'ios' ? Layout.spacing.lg : Layout.spacing.sm,
+              height: Platform.OS === 'ios' ? 88 : 64,
+              elevation: 0, // Flat style for Android
+              shadowOpacity: 0, // Flat style for iOS
             },
-            tabBarActiveTintColor: '#3B82F6',
-            tabBarInactiveTintColor: '#6B7280',
+            tabBarActiveTintColor: Colors.primary,
+            tabBarInactiveTintColor: Colors.text.secondary,
             tabBarLabelStyle: {
               fontSize: 12,
               fontWeight: '500',
@@ -41,8 +45,6 @@ export default function TabLayout() {
               ),
             }}
           />
-
-
           <Tabs.Screen
             name="create-order"
             options={{

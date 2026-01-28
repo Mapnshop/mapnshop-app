@@ -212,6 +212,9 @@ export default function InboxScreen() {
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
           }
           ListEmptyComponent={renderEmptyState}
+          showsVerticalScrollIndicator={false}
+          keyboardDismissMode="on-drag"
+          keyboardShouldPersistTaps="handled"
         />
       )}
     </View>

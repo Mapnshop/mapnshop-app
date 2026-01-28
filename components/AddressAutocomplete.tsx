@@ -1,5 +1,7 @@
 import React, { forwardRef, useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TextInput, FlatList, TouchableOpacity, Platform, ActivityIndicator } from 'react-native';
+import { Colors } from '@/constants/Colors';
+import { Layout } from '@/constants/Layout';
 
 const GOOGLE_API_KEY = process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY || process.env.EXPO_PUBLIC_GOOGLE_PLACES_API_KEY || '';
 
@@ -157,10 +159,10 @@ export const AddressAutocomplete = forwardRef<any, AddressAutocompleteProps>(({
                         setQuery(text);
                         fetchPredictions(text);
                     }}
-                    placeholderTextColor="#9CA3AF"
+                    placeholderTextColor={Colors.text.placeholder}
                 />
                 {loading && (
-                    <ActivityIndicator style={styles.loader} color="#3B82F6" size="small" />
+                    <ActivityIndicator style={styles.loader} color={Colors.primary} size="small" />
                 )}
             </View>
 
@@ -187,27 +189,28 @@ export const AddressAutocomplete = forwardRef<any, AddressAutocompleteProps>(({
 
 const styles = StyleSheet.create({
     container: {
-        marginBottom: 16,
+        marginBottom: Layout.spacing.md,
         zIndex: 1000,
+        width: '100%',
     },
     label: {
         fontSize: 14,
         fontWeight: '500',
-        color: '#374151',
-        marginBottom: 6,
+        color: Colors.text.primary,
+        marginBottom: Layout.spacing.xs,
     },
     inputContainer: {
         justifyContent: 'center',
     },
     textInput: {
-        backgroundColor: '#FFFFFF',
-        height: 44,
-        borderRadius: 8,
-        paddingHorizontal: 12,
+        backgroundColor: Colors.background,
+        borderRadius: Layout.borderRadius.md,
+        paddingHorizontal: Layout.spacing.md,
+        paddingVertical: Layout.spacing.sm + 4,
         fontSize: 16,
-        color: '#111827',
+        color: Colors.text.primary,
         borderWidth: 1,
-        borderColor: '#D1D5DB',
+        borderColor: Colors.border,
     },
     loader: {
         position: 'absolute',
@@ -215,13 +218,14 @@ const styles = StyleSheet.create({
     },
     listView: {
         position: 'absolute',
-        top: 50,
+        top: '100%',
+        marginTop: 4,
         left: 0,
         right: 0,
-        backgroundColor: 'white',
-        borderRadius: 8,
+        backgroundColor: Colors.background,
+        borderRadius: Layout.borderRadius.md,
         borderWidth: 1,
-        borderColor: '#E5E7EB',
+        borderColor: Colors.border,
         elevation: 3,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
@@ -231,12 +235,12 @@ const styles = StyleSheet.create({
         zIndex: 1000,
     },
     row: {
-        padding: 13,
+        padding: Layout.spacing.md,
         borderBottomWidth: 1,
-        borderBottomColor: '#F3F4F6',
+        borderBottomColor: Colors.border,
     },
     description: {
         fontSize: 14,
-        color: '#4B5563',
+        color: Colors.text.primary,
     },
 });

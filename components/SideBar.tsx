@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, useWindowDimensions, Platform, Pressable } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, useWindowDimensions, Platform, Pressable, ScrollView } from 'react-native';
 import { useRouter, usePathname } from 'expo-router';
 import { Hop as Home, Inbox, Plus, ChartBar as BarChart3, Settings, LogOut } from 'lucide-react-native';
 import { useAuth } from '@/contexts/AuthContext';
@@ -30,7 +30,6 @@ export function SideBar() {
 
     return (
         <View style={styles.container}>
-            {/* Brand / Logo Area */}
             <View style={styles.header}>
                 <View style={styles.logoBadge}>
                     <Text style={styles.logoText}>{business?.name?.substring(0, 2).toUpperCase() || 'BZ'}</Text>
@@ -38,8 +37,11 @@ export function SideBar() {
                 <Text style={styles.brandName} numberOfLines={1}>{business?.name || 'Business OS'}</Text>
             </View>
 
-            {/* Navigation Items */}
-            <View style={styles.nav}>
+            <ScrollView
+                style={styles.nav}
+                contentContainerStyle={{ gap: 8 }}
+                showsVerticalScrollIndicator={false}
+            >
                 {menuItems.map((item) => {
                     // Robust active check
                     const isActive = item.regex.test(pathname);
@@ -64,9 +66,8 @@ export function SideBar() {
                         </Pressable>
                     );
                 })}
-            </View>
+            </ScrollView>
 
-            {/* Footer / User Profile */}
             <View style={styles.footer}>
                 <TouchableOpacity style={styles.logoutButton} onPress={signOut}>
                     <LogOut size={20} color="#EF4444" />

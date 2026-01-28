@@ -26,6 +26,30 @@ export default function Root({ children }: PropsWithChildren) {
         */}
                 <ScrollViewStyleReset />
 
+                <style dangerouslySetInnerHTML={{
+                    __html: `
+                    /* Clean Scrollbars for Web */
+                    ::-webkit-scrollbar {
+                        width: 8px;
+                        height: 8px;
+                    }
+                    ::-webkit-scrollbar-track {
+                        background: transparent;
+                    }
+                    ::-webkit-scrollbar-thumb {
+                        background-color: #CBD5E1;
+                        border-radius: 4px;
+                    }
+                    ::-webkit-scrollbar-thumb:hover {
+                        background-color: #94A3B8;
+                    }
+                    /* Firefox */
+                    * {
+                        scrollbar-width: thin;
+                        scrollbar-color: #CBD5E1 transparent;
+                    }
+                `}} />
+
                 {/* Add any global CSS or meta tags here */}
                 <script
                     src={`https://maps.googleapis.com/maps/api/js?key=${GOOGLE_API_KEY}&libraries=places`}
