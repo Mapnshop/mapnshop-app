@@ -44,6 +44,34 @@ export const authApi = {
     const { data: { user }, error } = await supabase.auth.getUser();
     if (error) throw new ApiError(error.message);
     return user;
+  },
+
+  async resetPassword(email: string) {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: 'https://example.com/update-password',
+    });
+    if (error) throw new ApiError(error.message);
+  },
+
+  async updateUser(attributes: { email?: string; password?: string }) {
+    const { data, error } = await supabase.auth.updateUser(attributes);
+    if (error) throw new ApiError(error.message);
+    return data;
+  },
+
+  async deleteUser() {
+    // 1. Delete Business Data (Soft Delete or Hard Delete based on policy)
+    // For now, we rely on RLS/Cascades or manual deletion.
+    // Auth User deletion requires Admin API or RPC.
+    // We will sign out and perhaps call an RPC if you have one, 
+    // otherwise we just wipe the local session as "Delete" for the MVP client-side.
+    // Ideally: await supabase.rpc('delete_user_account');
+
+    // For this MVP, we will try to delete the business record owned by user.
+    const user = await this.getCurrentUser();
+    if (user) {
+      await supabase.from('businesses').delete().eq('owner_id', user.id);
+    }
   }
 };
 

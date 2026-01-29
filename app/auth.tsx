@@ -1,15 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Image, KeyboardAvoidingView, Platform, Animated } from 'react-native';
+import { View, Text, StyleSheet, Image, Platform, TouchableOpacity, Modal, Alert } from 'react-native';
 import { useAuth } from '@/contexts/AuthContext';
 import { Input } from '@/components/Input';
 import { Button } from '@/components/Button';
-import { router } from 'expo-router';
+import { ScreenContainer } from '@/components/ScreenContainer';
+import { Colors } from '@/constants/Colors';
+import { Layout } from '@/constants/Layout';
+import { X } from 'lucide-react-native';
 
 export default function AuthScreen() {
-  const { signIn, signUp } = useAuth();
-  const [isSignUp, setIsSignUp] = useState(false);
+  const { signIn, signUp, resetPassword, user } = useAuth();
+  const [activeTab, setActiveTab] = useState<'signin' | 'signup'>('signin');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Password Reset State
+  const [showResetModal, setShowResetModal] = useState(false);
+  const [resetEmail, setResetEmail] = useState('');
+  const [resetLoading, setResetLoading] = useState(false);
 
   const [formData, setFormData] = useState({
     email: '',
@@ -17,10 +25,10 @@ export default function AuthScreen() {
     confirmPassword: '',
   });
 
-  // Clear error when switching modes
+  // Clear error when switching tabs
   useEffect(() => {
     setError(null);
-  }, [isSignUp]);
+  }, [activeTab]);
 
   const handleSubmit = async () => {
     setError(null);
@@ -31,7 +39,7 @@ export default function AuthScreen() {
       return;
     }
 
-    if (isSignUp && formData.password !== formData.confirmPassword) {
+    if (activeTab === 'signup' && formData.password !== formData.confirmPassword) {
       setError('Passwords do not match');
       return;
     }
@@ -43,24 +51,22 @@ export default function AuthScreen() {
 
     setLoading(true);
     try {
-      if (isSignUp) {
+      if (activeTab === 'signup') {
         await signUp(formData.email.trim(), formData.password);
-        // On web/mobile, show success message or redirect logic
-        // For polished UX, we might want to auto-login or show a distinct success view
-        // But for now, let's just clear form or show success message inline
         setError(null);
-        alert('Account created! Please verify your email.'); // Keep native alert for success only
+        alert('Account created! Please verify your email.');
+        setActiveTab('signin');
       } else {
         await signIn(formData.email.trim(), formData.password);
       }
     } catch (err: any) {
-      // Improve error messages
       console.log('Auth error:', err);
       let msg = err.message || 'Authentication failed';
 
-      if (msg.includes('Invalid login credentials')) msg = 'Invalid email or password';
+      // Improve error messages
+      if (msg.includes('Invalid login credentials')) msg = 'Invalid email or password.';
       if (msg.includes('weak_password')) msg = 'Password is too weak. Use at least 6 characters.';
-      if (msg.includes('User already registered')) msg = 'This email is already registered. Try signing in.';
+      if (msg.includes('User already registered')) msg = 'This email is already registered. Please sign in instead.';
 
       setError(msg);
     } finally {
@@ -68,30 +74,72 @@ export default function AuthScreen() {
     }
   };
 
+  const handleResetPassword = async () => {
+    if (!resetEmail.trim()) {
+      Alert.alert('Required', 'Please enter your email address.');
+      return;
+    }
+
+    setResetLoading(true);
+    try {
+      await resetPassword(resetEmail.trim());
+      setShowResetModal(false);
+      setResetEmail('');
+      Alert.alert('Success', 'Password reset instructions have been sent to your email.');
+    } catch (error: any) {
+      Alert.alert('Error', error.message || 'Failed to send reset email.');
+    } finally {
+      setResetLoading(false);
+    }
+  };
+
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
-      <View style={styles.centerContent}>
-        <View style={styles.card}>
-          <View style={styles.header}>
-            <Image
-              source={require('@/assets/images/mapnshop\'s_logo.png')}
-              style={styles.logo}
-              resizeMode="contain"
-            />
-            <Text style={styles.title}>{isSignUp ? 'Create Account' : 'Welcome Back'}</Text>
+    <ScreenContainer scrollable>
+      <View style={styles.header}>
+        <Image
+          source={require('@/assets/images/mapnshop\'s_logo.png')}
+          style={styles.logo}
+          resizeMode="contain"
+        />
+      </View>
+
+      <View style={styles.card}>
+        {/* Tabs */}
+        <View style={styles.tabContainer}>
+          <TouchableOpacity
+            style={[styles.tab, activeTab === 'signin' && styles.activeTab]}
+            onPress={() => setActiveTab('signin')}
+          >
+            <Text style={[styles.tabText, activeTab === 'signin' && styles.activeTabText]}>Sign In</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.tab, activeTab === 'signup' && styles.activeTab]}
+            onPress={() => setActiveTab('signup')}
+          >
+            <Text style={[styles.tabText, activeTab === 'signup' && styles.activeTabText]}>Create Account</Text>
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.content}>
+          <View style={styles.welcomeHeader}>
+            <Text style={styles.title}>
+              {activeTab === 'signin' ? 'Welcome Back' : 'Get Started'}
+            </Text>
             <Text style={styles.subtitle}>
-              {isSignUp
-                ? 'Join to start managing your local business'
-                : 'Sign in to your dashboard'}
+              {activeTab === 'signin'
+                ? 'Sign in to access your dashboard'
+                : 'Create an account to manage your business'}
             </Text>
           </View>
 
           {error && (
             <View style={styles.errorContainer}>
               <Text style={styles.errorText}>{error}</Text>
+              {error.includes('Email not confirmed') && (
+                <TouchableOpacity style={{ marginTop: 8 }} onPress={() => Alert.alert('Coming Soon', 'Resend logic requires additional Supabase setup defined in API.')}>
+                  <Text style={{ textAlign: 'center', color: Colors.primary, fontWeight: '600' }}>Resend Verification Email</Text>
+                </TouchableOpacity>
+              )}
             </View>
           )}
 
@@ -120,7 +168,16 @@ export default function AuthScreen() {
               secureTextEntry
             />
 
-            {isSignUp && (
+            {activeTab === 'signin' && (
+              <TouchableOpacity
+                onPress={() => setShowResetModal(true)}
+                style={styles.forgotPasswordLink}
+              >
+                <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+              </TouchableOpacity>
+            )}
+
+            {activeTab === 'signup' && (
               <Input
                 label="Confirm Password"
                 value={formData.confirmPassword}
@@ -133,118 +190,206 @@ export default function AuthScreen() {
               />
             )}
 
+            <View style={styles.spacer} />
+
             <Button
-              title={isSignUp ? 'Create Account' : 'Sign In'}
+              title={activeTab === 'signin' ? 'Sign In' : 'Create Account'}
               onPress={handleSubmit}
               loading={loading}
-              style={styles.submitButton}
               size="large"
             />
+          </View>
+        </View>
+      </View>
 
-            <View style={styles.footer}>
-              <Text style={styles.footerText}>
-                {isSignUp ? 'Already have an account?' : 'Don\'t have an account?'}
+      {/* Forgot Password Modal */}
+      <Modal
+        visible={showResetModal}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setShowResetModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Reset Password</Text>
+              <TouchableOpacity onPress={() => setShowResetModal(false)}>
+                <X size={24} color={Colors.text.primary} />
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.modalBody}>
+              <Text style={styles.modalText}>
+                Enter your email address and we'll send you instructions to reset your password.
               </Text>
+
+              <Input
+                label="Email Address"
+                value={resetEmail}
+                onChangeText={setResetEmail}
+                placeholder="name@company.com"
+                keyboardType="email-address"
+                autoCapitalize="none"
+              />
+
+              <View style={{ height: 16 }} />
+
               <Button
-                title={isSignUp ? 'Sign In' : 'Sign Up'}
-                onPress={() => setIsSignUp(!isSignUp)}
-                variant="outline"
-                size="small"
-                style={styles.toggleButton}
+                title="Send Reset Instructions"
+                onPress={handleResetPassword}
+                loading={resetLoading}
               />
             </View>
           </View>
         </View>
-      </View>
-    </KeyboardAvoidingView>
+      </Modal>
+
+    </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F3F4F6', // Lighter background for better contrast
-  },
-  centerContent: {
-    flex: 1,
-    justifyContent: 'center',
+  header: {
     alignItems: 'center',
-    padding: 16,
+    marginVertical: Layout.spacing.xl,
+  },
+  logo: {
+    width: 150,
+    height: 150,
+    marginBottom: Layout.spacing.md,
+  },
+  appName: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: Colors.text.primary,
   },
   card: {
-    width: '100%',
-    maxWidth: 440,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 24,
-    padding: 32,
-    // Polished shadow for web/iOS
+    backgroundColor: Colors.background,
+    borderRadius: Layout.borderRadius.xl,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: Colors.border,
     ...Platform.select({
       web: {
-        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)',
       },
       ios: {
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.1,
+        shadowOpacity: 0.05,
         shadowRadius: 12,
       },
       android: {
-        elevation: 4,
+        elevation: 2,
       },
     }),
   },
-  header: {
-    alignItems: 'center',
-    marginBottom: 32,
+  tabContainer: {
+    flexDirection: 'row',
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
   },
-  logo: {
-    width: 80,
-    height: 80,
-    marginBottom: 24,
+  tab: {
+    flex: 1,
+    paddingVertical: Layout.spacing.md,
+    alignItems: 'center',
+    backgroundColor: Colors.surface,
+  },
+  activeTab: {
+    backgroundColor: Colors.background,
+    borderBottomWidth: 2,
+    borderBottomColor: Colors.primary,
+    marginBottom: -1,
+  },
+  tabText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: Colors.text.secondary,
+  },
+  activeTabText: {
+    color: Colors.primary,
+  },
+  content: {
+    padding: Layout.spacing.xl,
+  },
+  welcomeHeader: {
+    marginBottom: Layout.spacing.lg,
+    alignItems: 'center',
   },
   title: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: 'bold',
-    color: '#111827',
-    marginBottom: 8,
-    textAlign: 'center',
+    color: Colors.text.primary,
+    marginBottom: 4,
   },
   subtitle: {
-    fontSize: 16,
-    color: '#6B7280',
+    fontSize: 14,
+    color: Colors.text.secondary,
     textAlign: 'center',
   },
   form: {
-    gap: 16,
+    gap: 0,
+  },
+  spacer: {
+    height: Layout.spacing.md,
   },
   errorContainer: {
     backgroundColor: '#FEF2F2',
     borderColor: '#FAC7C7',
     borderWidth: 1,
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 20,
+    borderRadius: Layout.borderRadius.md,
+    padding: Layout.spacing.md,
+    marginBottom: Layout.spacing.lg,
   },
   errorText: {
-    color: '#B91C1C',
+    color: Colors.status.error,
     fontSize: 14,
     textAlign: 'center',
   },
-  submitButton: {
-    marginTop: 8,
+  forgotPasswordLink: {
+    alignSelf: 'flex-end',
+    marginBottom: Layout.spacing.md,
+    marginTop: -4,
   },
-  footer: {
-    marginTop: 24,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-  },
-  footerText: {
-    color: '#6B7280',
+  forgotPasswordText: {
+    color: Colors.primary,
     fontSize: 14,
+    fontWeight: '500',
   },
-  toggleButton: {
-    borderColor: 'transparent',
-  }
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: Layout.spacing.lg,
+  },
+  modalContent: {
+    width: '100%',
+    maxWidth: 400,
+    backgroundColor: Colors.background,
+    borderRadius: Layout.borderRadius.xl,
+    overflow: 'hidden',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: Layout.spacing.lg,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: Colors.text.primary,
+  },
+  modalBody: {
+    padding: Layout.spacing.lg,
+  },
+  modalText: {
+    fontSize: 14,
+    color: Colors.text.secondary,
+    marginBottom: Layout.spacing.lg,
+    lineHeight: 20,
+  },
 });

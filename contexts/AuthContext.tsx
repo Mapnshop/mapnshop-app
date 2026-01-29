@@ -10,6 +10,10 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
+  resetPassword: (email: string) => Promise<void>;
+  updateEmail: (email: string) => Promise<void>;
+  updatePassword: (password: string) => Promise<void>;
+  deleteAccount: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -65,8 +69,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const resetPassword = async (email: string) => {
+    await authApi.resetPassword(email);
+  };
+
+  const updateEmail = async (email: string) => {
+    await authApi.updateUser({ email });
+  };
+
+  const updatePassword = async (password: string) => {
+    await authApi.updateUser({ password });
+  };
+
+  const deleteAccount = async () => {
+    await authApi.deleteUser();
+    await signOut();
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, signIn, signUp, signOut }}>
+    <AuthContext.Provider value={{
+      user,
+      loading,
+      signIn,
+      signUp,
+      signOut,
+      resetPassword,
+      updateEmail,
+      updatePassword,
+      deleteAccount
+    }}>
       {children}
     </AuthContext.Provider>
   );

@@ -14,6 +14,7 @@ import { TeamManagementSection } from '@/components/settings/TeamManagementSecti
 import { NotificationsSection } from '@/components/settings/NotificationsSection';
 import { DataExportSection } from '@/components/settings/DataExportSection';
 import { HelpSupportSection } from '@/components/settings/HelpSupportSection';
+import { AccountSecuritySection } from '@/components/settings/AccountSecuritySection';
 import { LogOut } from 'lucide-react-native';
 
 export default function SettingsScreen() {
@@ -313,22 +314,11 @@ export default function SettingsScreen() {
 
             <HelpSupportSection />
 
-            {/* Account Section */}
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Account</Text>
-              <View style={styles.accountInfo}>
-                <Text style={styles.accountLabel}>Email:</Text>
-                <Text style={styles.accountValue}>{user?.email}</Text>
-              </View>
-              <Button
-                title="Sign Out"
-                onPress={handleSignOut}
-                variant="outline"
-                style={{ borderColor: '#EF4444' }}
-                textStyle={{ color: '#EF4444' }}
-                icon={<LogOut size={16} color="#EF4444" />}
-              />
-            </View>
+            <HelpSupportSection />
+
+            <AccountSecuritySection />
+
+            <View style={{ height: 40 }} />
 
             <View style={{ height: 40 }} />
           </View>
