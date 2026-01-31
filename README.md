@@ -26,6 +26,17 @@ MapNShop is a **Local Commerce Operating System** built with **React Native (Exp
 - **Business Profile**: Manage opening hours, contact info, and currency settings.
 - **Operational Defaults**: Configure global tax rates and delivery fees.
 
+### 5. Analytics & Insights
+- **Daily Reports**: Visual breakdown of revenue, order counts, and delivery stats.
+- **Performance Metrics**: Monitor Average Order Value (AOV) and fulfillment rates.
+- **Date Filtering**: Quickly toggle between Today, Yesterday, and Weekly views.
+- **Actionable Insights**: Automated summaries of daily performance.
+
+### 6. Account Security
+- **Profile Management**: Securely update email and password.
+- **Data Control**: Full control over account deletion and data removal.
+- **Session Security**: Robust authentication flow with Supabase Auth.
+
 ---
 
 ## 🛠️ Tech Stack
