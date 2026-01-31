@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, RefreshControl, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, RefreshControl, TouchableOpacity, Platform } from 'react-native';
 import { useBusiness } from '@/contexts/BusinessContext';
 import { dashboardApi } from '@/lib/api';
 import { DailyReport } from '@/types';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { TrendingUp, Package, Truck, DollarSign } from 'lucide-react-native';
+import { Colors } from '@/constants/Colors';
+import { Layout } from '@/constants/Layout';
+import { ScreenContainer } from '@/components/ScreenContainer';
 
 type DateRange = 'today' | 'yesterday' | 'week';
 
@@ -57,156 +60,133 @@ export default function ReportsScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <ScreenContainer scrollable>
       <View style={styles.header}>
-        <View style={styles.headerContent}>
-          <Text style={styles.title}>Summary</Text>
+        <Text style={styles.title}>Summary</Text>
 
-          {/* Date Switcher */}
-          <View style={styles.filterRow}>
-            {(['today', 'yesterday', 'week'] as DateRange[]).map((range) => (
-              <TouchableOpacity
-                key={range}
-                style={[
-                  styles.filterChip,
-                  dateRange === range && styles.activeFilterChip
-                ]}
-                onPress={() => setDateRange(range)}
-              >
-                <Text style={[
-                  styles.filterText,
-                  dateRange === range && styles.activeFilterText
-                ]}>
-                  {range === 'week' ? 'Last 7 Days' : range.charAt(0).toUpperCase() + range.slice(1)}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+        {/* Date Switcher */}
+        <View style={styles.filterRow}>
+          {(['today', 'yesterday', 'week'] as DateRange[]).map((range) => (
+            <TouchableOpacity
+              key={range}
+              style={[
+                styles.filterChip,
+                dateRange === range && styles.activeFilterChip
+              ]}
+              onPress={() => setDateRange(range)}
+            >
+              <Text style={[
+                styles.filterText,
+                dateRange === range && styles.activeFilterText
+              ]}>
+                {range === 'week' ? 'Last 7 Days' : range.charAt(0).toUpperCase() + range.slice(1)}
+              </Text>
+            </TouchableOpacity>
+          ))}
         </View>
       </View>
 
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-      >
-        <View style={styles.metricsContainer}>
-          <View style={styles.metricCard}>
-            <View style={[styles.metricIcon, { backgroundColor: '#EBF8FF' }]}>
-              <Package size={24} color="#3B82F6" />
-            </View>
-            <Text style={styles.metricNumber}>{report.orders_today}</Text>
-            <Text style={styles.metricLabel}>Orders</Text>
+      <View style={styles.metricsContainer}>
+        {/* Revenue Card (Primary) */}
+        <View style={[styles.metricCard, styles.primaryCard]}>
+          <View style={[styles.metricIcon, { backgroundColor: 'rgba(255,255,255,0.2)' }]}>
+            <DollarSign size={24} color="#FFFFFF" />
           </View>
-
-          <View style={styles.metricCard}>
-            <View style={[styles.metricIcon, { backgroundColor: '#F0FDF4' }]}>
-              <DollarSign size={24} color="#059669" />
-            </View>
-            <Text style={styles.metricNumber}>${report.total_revenue.toFixed(0)}</Text>
-            <Text style={styles.metricLabel}>Revenue</Text>
-          </View>
-
-          <View style={styles.metricCard}>
-            <View style={[styles.metricIcon, { backgroundColor: '#FEF3C7' }]}>
-              <Truck size={24} color="#D97706" />
-            </View>
-            <Text style={styles.metricNumber}>{report.delivered_count}</Text>
-            <Text style={styles.metricLabel}>Deliveries</Text>
-          </View>
-
-          <View style={styles.metricCard}>
-            <View style={[styles.metricIcon, { backgroundColor: '#F3E8FF' }]}>
-              <TrendingUp size={24} color="#7C3AED" />
-            </View>
-            <Text style={styles.metricNumber}>{report.pickup_count}</Text>
-            <Text style={styles.metricLabel}>Pickups</Text>
-          </View>
+          <Text style={[styles.metricNumber, { color: '#FFFFFF' }]}>${report.total_revenue.toFixed(0)}</Text>
+          <Text style={[styles.metricLabel, { color: 'rgba(255,255,255,0.8)' }]}>Revenue</Text>
         </View>
 
-        <View style={styles.summaryCard}>
-          <Text style={styles.summaryTitle}>Performance ({getDateLabel()})</Text>
-
-          <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>Average Order Value</Text>
-            <Text style={styles.summaryValue}>
-              ${report.orders_today > 0 ? (report.total_revenue / report.orders_today).toFixed(2) : '0.00'}
-            </Text>
+        {/* Other Cards */}
+        <View style={styles.metricCard}>
+          <View style={[styles.metricIcon, { backgroundColor: Colors.surface }]}>
+            <Package size={24} color={Colors.primary} />
           </View>
-
-          <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>Delivery Rate</Text>
-            <Text style={styles.summaryValue}>
-              {report.orders_today > 0 ? Math.round((report.delivered_count / report.orders_today) * 100) : 0}%
-            </Text>
-          </View>
-
-          <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>Pickup Rate</Text>
-            <Text style={styles.summaryValue}>
-              {report.orders_today > 0 ? Math.round((report.pickup_count / report.orders_today) * 100) : 0}%
-            </Text>
-          </View>
+          <Text style={styles.metricNumber}>{report.orders_today}</Text>
+          <Text style={styles.metricLabel}>Orders</Text>
         </View>
 
-        <View style={styles.insightsCard}>
-          <Text style={styles.insightsTitle}>Quick Insights</Text>
-
-          {report.orders_today === 0 ? (
-            <Text style={styles.insightText}>No orders in this period.</Text>
-          ) : (
-            <>
-              <Text style={styles.insightText}>
-                • You've processed {report.orders_today} order{report.orders_today !== 1 ? 's' : ''}
-              </Text>
-              <Text style={styles.insightText}>
-                • {report.delivered_count > report.pickup_count ? 'Delivery' : 'Pickup'} was the primary method
-              </Text>
-              <Text style={styles.insightText}>
-                • Revenue: ${report.total_revenue.toFixed(2)}
-              </Text>
-            </>
-          )}
+        <View style={styles.metricCard}>
+          <View style={[styles.metricIcon, { backgroundColor: Colors.surface }]}>
+            <Truck size={24} color={Colors.text.primary} />
+          </View>
+          <Text style={styles.metricNumber}>{report.delivered_count}</Text>
+          <Text style={styles.metricLabel}>Deliveries</Text>
         </View>
-      </ScrollView>
-    </View>
+
+        <View style={styles.metricCard}>
+          <View style={[styles.metricIcon, { backgroundColor: Colors.surface }]}>
+            <TrendingUp size={24} color={Colors.text.primary} />
+          </View>
+          <Text style={styles.metricNumber}>{report.pickup_count}</Text>
+          <Text style={styles.metricLabel}>Pickups</Text>
+        </View>
+      </View>
+
+      <View style={styles.sectionCard}>
+        <Text style={styles.sectionTitle}>Performance ({getDateLabel()})</Text>
+
+        <View style={styles.summaryRow}>
+          <Text style={styles.summaryLabel}>Average Order Value</Text>
+          <Text style={styles.summaryValue}>
+            ${report.orders_today > 0 ? (report.total_revenue / report.orders_today).toFixed(2) : '0.00'}
+          </Text>
+        </View>
+
+        <View style={styles.summaryRow}>
+          <Text style={styles.summaryLabel}>Delivery Rate</Text>
+          <Text style={styles.summaryValue}>
+            {report.orders_today > 0 ? Math.round((report.delivered_count / report.orders_today) * 100) : 0}%
+          </Text>
+        </View>
+
+        <View style={styles.summaryRow}>
+          <Text style={styles.summaryLabel}>Pickup Rate</Text>
+          <Text style={styles.summaryValue}>
+            {report.orders_today > 0 ? Math.round((report.pickup_count / report.orders_today) * 100) : 0}%
+          </Text>
+        </View>
+      </View>
+
+      <View style={styles.sectionCard}>
+        <Text style={styles.sectionTitle}>Quick Insights</Text>
+
+        {report.orders_today === 0 ? (
+          <Text style={styles.insightText}>No orders in this period.</Text>
+        ) : (
+          <>
+            <Text style={styles.insightText}>
+              • You've processed {report.orders_today} order{report.orders_today !== 1 ? 's' : ''}
+            </Text>
+            <Text style={styles.insightText}>
+              • {report.delivered_count > report.pickup_count ? 'Delivery' : 'Pickup'} was the primary method
+            </Text>
+            <Text style={styles.insightText}>
+              • Revenue: ${report.total_revenue.toFixed(2)}
+            </Text>
+          </>
+        )}
+      </View>
+
+      {/* Spacer for bottom tabs */}
+      <View style={{ height: 40 }} />
+    </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: Colors.background,
   },
   header: {
-    padding: 20,
-    paddingTop: 60,
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
-  },
-  headerContent: {
-    width: '100%',
-    maxWidth: 800,
-    alignSelf: 'center',
-  },
-  scrollView: {
-    flex: 1,
-    width: '100%',
-  },
-  scrollContent: {
-    width: '100%',
-    maxWidth: 800,
-    alignSelf: 'center',
-    paddingBottom: 40,
+    marginBottom: Layout.spacing.lg,
   },
   title: {
     fontSize: 28,
-    fontWeight: '700',
-    color: '#111827',
+    fontWeight: '800',
+    color: Colors.text.primary,
     marginBottom: 12,
+    letterSpacing: -0.5,
   },
   filterRow: {
     flexDirection: 'row',
@@ -214,47 +194,54 @@ const styles = StyleSheet.create({
   },
   filterChip: {
     paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    backgroundColor: '#F3F4F6',
+    paddingVertical: 6,
+    borderRadius: 999,
+    backgroundColor: Colors.surface,
     borderWidth: 1,
-    borderColor: 'transparent',
+    borderColor: Colors.border,
   },
   activeFilterChip: {
-    backgroundColor: '#EFF6FF',
-    borderColor: '#3B82F6',
+    backgroundColor: Colors.primary,
+    borderColor: Colors.primary,
   },
   filterText: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#6B7280',
+    fontWeight: '500',
+    color: Colors.text.secondary,
   },
   activeFilterText: {
-    color: '#3B82F6',
+    color: Colors.primaryForeground,
+    fontWeight: '600',
   },
   metricsContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    padding: 20,
-    gap: 16,
+    gap: 12,
+    marginBottom: Layout.spacing.lg,
   },
   metricCard: {
-    flex: 1,
-    minWidth: '45%',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    padding: 20,
+    width: '48%', // Approx 2 columns
+    backgroundColor: Colors.surface,
+    borderRadius: Layout.borderRadius.lg,
+    padding: 16,
+    alignItems: 'flex-start',
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  primaryCard: {
+    width: '100%', // Full width for revenue
+    backgroundColor: Colors.primary,
+    borderColor: Colors.primary,
+    flexDirection: 'row',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    justifyContent: 'space-between',
+    paddingHorizontal: 24,
+    paddingVertical: 24,
   },
   metricIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 12,
@@ -262,76 +249,56 @@ const styles = StyleSheet.create({
   metricNumber: {
     fontSize: 24,
     fontWeight: '700',
-    color: '#111827',
-    marginBottom: 4,
+    color: Colors.text.primary,
+    marginBottom: 2,
+    letterSpacing: -0.5,
   },
   metricLabel: {
-    fontSize: 14,
-    color: '#6B7280',
-    textAlign: 'center',
+    fontSize: 13,
+    color: Colors.text.secondary,
+    fontWeight: '500',
   },
-  summaryCard: {
-    margin: 20,
-    marginTop: 0,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    padding: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+  sectionCard: {
+    backgroundColor: Colors.surface,
+    borderRadius: Layout.borderRadius.lg,
+    padding: Layout.spacing.lg,
+    marginBottom: Layout.spacing.lg,
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
-  summaryTitle: {
+  sectionTitle: {
     fontSize: 18,
-    fontWeight: '600',
-    color: '#111827',
+    fontWeight: '700',
+    color: Colors.text.primary,
     marginBottom: 16,
+    letterSpacing: -0.3,
   },
   summaryRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 8,
+    paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#F3F4F6',
+    borderBottomColor: Colors.border,
   },
   summaryLabel: {
-    fontSize: 16,
-    color: '#6B7280',
+    fontSize: 15,
+    color: Colors.text.secondary,
   },
   summaryValue: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '600',
-    color: '#111827',
-  },
-  insightsCard: {
-    margin: 20,
-    marginTop: 0,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    padding: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  insightsTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#111827',
-    marginBottom: 12,
+    color: Colors.text.primary,
   },
   insightText: {
     fontSize: 14,
-    color: '#6B7280',
-    lineHeight: 20,
+    color: Colors.text.secondary,
+    lineHeight: 22,
     marginBottom: 8,
   },
   errorText: {
     fontSize: 16,
-    color: '#EF4444',
+    color: Colors.status.error,
     textAlign: 'center',
     marginTop: 40,
   },

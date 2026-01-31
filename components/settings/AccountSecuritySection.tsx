@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Alert, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, Alert, TouchableOpacity, Platform } from 'react-native';
 import { Input } from '@/components/Input';
 import { Button } from '@/components/Button';
 import { Colors } from '@/constants/Colors';
@@ -54,24 +54,33 @@ export function AccountSecuritySection() {
     };
 
     const handleDeleteAccount = () => {
-        Alert.alert(
-            'Delete Account',
-            'Are you sure? This action cannot be undone and will delete your business data locally.',
-            [
-                { text: 'Cancel', style: 'cancel' },
-                {
-                    text: 'Delete',
-                    style: 'destructive',
-                    onPress: async () => {
-                        try {
-                            await deleteAccount();
-                        } catch (e: any) {
-                            Alert.alert('Error', e.message);
+        if (Platform.OS === 'web') {
+            if (window.confirm('Are you sure? This action cannot be undone and will delete your business data locally.')) {
+                deleteAccount().catch(e => {
+                    console.error(e);
+                    window.alert('Error: ' + e.message);
+                });
+            }
+        } else {
+            Alert.alert(
+                'Delete Account',
+                'Are you sure? This action cannot be undone and will delete your business data locally.',
+                [
+                    { text: 'Cancel', style: 'cancel' },
+                    {
+                        text: 'Delete',
+                        style: 'destructive',
+                        onPress: async () => {
+                            try {
+                                await deleteAccount();
+                            } catch (e: any) {
+                                Alert.alert('Error', e.message);
+                            }
                         }
                     }
-                }
-            ]
-        );
+                ]
+            );
+        }
     };
 
     return (

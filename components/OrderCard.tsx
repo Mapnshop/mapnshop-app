@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Pressable, Platform } from 'react-native';
 import { Order } from '@/types';
 import { MapPin, Phone, Clock, MessageCircle, Store, Check, ArrowRight, Play } from 'lucide-react-native';
+import { Colors } from '@/constants/Colors';
+import { Layout } from '@/constants/Layout';
 
 interface OrderCardProps {
   order: Order;
@@ -14,11 +16,11 @@ export function OrderCard({ order, onPress, onQuickAction }: OrderCardProps) {
 
   const getStatusColor = (status: Order['status']) => {
     switch (status) {
-      case 'created': return '#EF4444';
-      case 'preparing': return '#F59E0B';
-      case 'ready': return '#3B82F6';
-      case 'completed': return '#10B981';
-      default: return '#6B7280';
+      case 'created': return Colors.status.error;
+      case 'preparing': return Colors.status.warning;
+      case 'ready': return Colors.status.info;
+      case 'completed': return Colors.status.success;
+      default: return Colors.text.secondary;
     }
   };
 
@@ -56,18 +58,18 @@ export function OrderCard({ order, onPress, onQuickAction }: OrderCardProps) {
     if (order.status === 'created') {
       action = 'prepare';
       label = 'Start';
-      icon = <Play size={16} color="white" />;
-      color = '#F59E0B'; // Go to Orange (Preparing)
+      icon = <Play size={14} color="white" />;
+      color = Colors.status.warning;
     } else if (order.status === 'preparing') {
       action = 'ready';
       label = 'Ready';
-      icon = <Check size={16} color="white" />;
-      color = '#3B82F6'; // Go to Blue (Ready)
+      icon = <Check size={14} color="white" />;
+      color = Colors.status.info;
     } else if (order.status === 'ready') {
       action = 'complete';
       label = 'Done';
-      icon = <Check size={16} color="white" />;
-      color = '#10B981'; // Go to Green (Completed)
+      icon = <Check size={14} color="white" />;
+      color = Colors.status.success;
     }
 
     if (!action) return null;
@@ -100,14 +102,14 @@ export function OrderCard({ order, onPress, onQuickAction }: OrderCardProps) {
         <View style={styles.customerInfo}>
           <Text style={styles.customerName} numberOfLines={1}>{order.customer_name}</Text>
           <View style={styles.phoneRow}>
-            {order.source === 'whatsapp' ? <MessageCircle size={12} color="#25D366" /> : <Phone size={12} color="#6B7280" />}
+            {order.source === 'whatsapp' ? <MessageCircle size={12} color="#25D366" /> : <Phone size={12} color={Colors.text.secondary} />}
             <Text style={styles.phone}>{order.customer_phone}</Text>
           </View>
         </View>
 
         {/* Time Badge - Highly visible for "operational" feel */}
         <View style={styles.timeBadge}>
-          <Clock size={12} color="#6B7280" />
+          <Clock size={12} color={Colors.text.secondary} />
           <Text style={styles.timeText}>{formatTimeAgo(order.created_at)}</Text>
         </View>
       </View>
@@ -135,33 +137,43 @@ export function OrderCard({ order, onPress, onQuickAction }: OrderCardProps) {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 2,
+    backgroundColor: Colors.background,
+    borderRadius: Layout.borderRadius.lg,
+    padding: Layout.spacing.md,
+    marginBottom: Layout.spacing.sm,
     borderWidth: 1,
-    borderColor: '#F3F4F6',
+    borderColor: Colors.border,
+    ...Platform.select({
+      web: {
+        boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.05)',
+      },
+      ios: {
+        shadowColor: 'rgba(0,0,0,0.05)',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 1,
+        shadowRadius: 2,
+      },
+      android: {
+        elevation: 1,
+      },
+    }),
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 8,
+    marginBottom: Layout.spacing.sm,
   },
   customerInfo: {
     flex: 1,
-    marginRight: 8,
+    marginRight: Layout.spacing.sm,
   },
   customerName: {
     fontSize: 16,
-    fontWeight: '700',
-    color: '#111827',
+    fontWeight: '600',
+    color: Colors.text.primary,
     marginBottom: 2,
+    letterSpacing: -0.3,
   },
   phoneRow: {
     flexDirection: 'row',
@@ -170,35 +182,37 @@ const styles = StyleSheet.create({
   },
   phone: {
     fontSize: 13,
-    color: '#6B7280',
+    color: Colors.text.secondary,
   },
   timeBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: Colors.surface,
     paddingHorizontal: 8,
     paddingVertical: 4,
-    borderRadius: 6,
+    borderRadius: Layout.borderRadius.sm,
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
   timeText: {
     fontSize: 12,
     fontWeight: '500',
-    color: '#4B5563',
+    color: Colors.text.secondary,
   },
   description: {
     fontSize: 15,
-    color: '#374151',
-    marginBottom: 16,
-    lineHeight: 20,
+    color: Colors.text.primary, // Darker text for readability
+    marginBottom: Layout.spacing.md,
+    lineHeight: 22,
   },
   footer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingTop: 12,
+    paddingTop: Layout.spacing.sm,
     borderTopWidth: 1,
-    borderTopColor: '#F3F4F6',
+    borderTopColor: Colors.border,
   },
   statusRow: {
     flexDirection: 'row',
@@ -211,8 +225,9 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   statusLabel: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '600',
+    letterSpacing: -0.2,
   },
   rightFooter: {
     flexDirection: 'row',
@@ -222,7 +237,8 @@ const styles = StyleSheet.create({
   price: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#111827',
+    color: Colors.text.primary,
+    fontVariant: ['tabular-nums'], // Better for numbers
   },
   quickActionButton: {
     flexDirection: 'row',
@@ -230,19 +246,20 @@ const styles = StyleSheet.create({
     gap: 4,
     paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: 20,
-    elevation: 1,
+    borderRadius: 999, // Pill shape
   },
   quickActionText: {
     color: 'white',
     fontWeight: '600',
-    fontSize: 13,
+    fontSize: 12,
   },
   cardHovered: {
     transform: [{ translateY: -2 }],
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
-    borderColor: '#3B82F6',
+    borderColor: Colors.primary,
+    ...Platform.select({
+      web: {
+        boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025)',
+      }
+    }),
   }
 });

@@ -2,14 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, Switch, Alert, TouchableOpacity, ScrollView, Modal, ActivityIndicator, Platform } from 'react-native';
 import { useBusiness } from '@/contexts/BusinessContext';
 import { ordersApi, customersApi } from '@/lib/api';
-import { sendPushToBusiness } from '@/lib/notifications';
 import { useAuth } from '@/contexts/AuthContext';
 import { Input } from '@/components/Input';
 import { Button } from '@/components/Button';
 import { AddressAutocomplete } from '@/components/AddressAutocomplete';
+import { ScreenContainer } from '@/components/ScreenContainer';
+import { Colors } from '@/constants/Colors';
+import { Layout } from '@/constants/Layout';
 import { router } from 'expo-router';
 import { Customer } from '@/types';
-import { User, Phone, MapPin, X } from 'lucide-react-native';
+import { User, Phone, MapPin, X, ChevronRight } from 'lucide-react-native';
 
 export default function CreateOrderScreen() {
   const { user } = useAuth();
@@ -150,9 +152,6 @@ export default function CreateOrderScreen() {
       }
 
       if (Platform.OS === 'web') {
-        // Web Helper: confirm() returns true for OK (View Order), false for Cancel (Stay/Unknown)
-        // We'll phrase it: "Order Created. View Order now?" 
-        // OK = View, Cancel = Stay to create New
         if (confirm('Order created successfully! View Order now?')) {
           router.replace(`/order/${order.id}`);
         } else {
@@ -205,43 +204,47 @@ export default function CreateOrderScreen() {
 
   return (
     <>
-      <View style={styles.container}>
+      <ScreenContainer scrollable>
+        {/* Header - now part of ScreenContainer content but we style it plainly */}
         <View style={styles.header}>
-          <View style={styles.headerContent}>
-            <Text style={styles.title}>Create New Order</Text>
-            <Text style={styles.subtitle}>Manually add an order to the system</Text>
-          </View>
+          <Text style={styles.title}>Create Order</Text>
+          <Text style={styles.subtitle}>Enter order details below</Text>
         </View>
 
-        <ScrollView style={styles.form} keyboardShouldPersistTaps="handled">
-          {/* Customer Inputs */}
-          <View style={{ marginBottom: 16, zIndex: 200 }}>
-            <Input
-              label="Customer Phone *"
-              value={formData.customer_phone}
-              onChangeText={async (text) => {
-                setFormData({ ...formData, customer_phone: text });
-                // Simple debounce or check length before searching
-                if (text.length >= 3 && business) {
-                  try {
-                    const customers = await customersApi.search(business.id, text);
-                    // Could show autocomplete results here in future
-                  } catch (e) {
-                    // Ignore
-                  }
-                }
-              }}
-              placeholder="Enter phone number"
-              keyboardType="phone-pad"
-            />
+        <View style={styles.form}>
+          {/* Customer Section */}
+          <Text style={styles.sectionTitle}>Customer Details</Text>
 
-            <TouchableOpacity
-              style={styles.recentButton}
-              onPress={() => setShowCustomerPicker(true)}
-            >
-              <User size={14} color="#3B82F6" style={{ marginRight: 4 }} />
-              <Text style={styles.recentButtonText}>Recent</Text>
-            </TouchableOpacity>
+          <View style={{ marginBottom: Layout.spacing.lg, zIndex: 200 }}>
+            {/* Phone Input with Recent Button positioned nicely */}
+            <View>
+              <Input
+                label="Customer Phone *"
+                value={formData.customer_phone}
+                onChangeText={async (text) => {
+                  setFormData({ ...formData, customer_phone: text });
+                  if (text.length >= 3 && business) {
+                    try {
+                      const customers = await customersApi.search(business.id, text);
+                    } catch (e) { }
+                  }
+                }}
+                placeholder="Enter phone number"
+                keyboardType="phone-pad"
+              />
+
+              {/* Float 'Recent' button over the input or near label? 
+                    Better to put it in a row with Label or below input. 
+                    Let's put it as a helper action. 
+                */}
+              <TouchableOpacity
+                style={styles.recentButton}
+                onPress={() => setShowCustomerPicker(true)}
+              >
+                <User size={14} color={Colors.primary} style={{ marginRight: 4 }} />
+                <Text style={styles.recentButtonText}>Select Recent</Text>
+              </TouchableOpacity>
+            </View>
           </View>
 
           <Input
@@ -251,9 +254,26 @@ export default function CreateOrderScreen() {
             placeholder="Enter customer name"
           />
 
-          {/* Address - Only if Delivery Required */}
+          {/* Delivery Toggle & Address */}
+          <Text style={styles.sectionTitle}>Delivery Options</Text>
+
+          <View style={styles.switchContainer}>
+            <View style={styles.switchLabel}>
+              <Text style={styles.switchText}>Delivery Required</Text>
+              <Text style={styles.switchSubtext}>
+                Is this order for delivery?
+              </Text>
+            </View>
+            <Switch
+              value={formData.delivery_required}
+              onValueChange={(value) => setFormData({ ...formData, delivery_required: value })}
+              trackColor={{ false: Colors.border, true: Colors.primary }}
+              thumbColor={Platform.OS === 'ios' ? '#FFFFFF' : (formData.delivery_required ? '#FFFFFF' : '#F3F4F6')}
+            />
+          </View>
+
           {formData.delivery_required && (
-            <View style={{ zIndex: 100, marginBottom: 16 }}>
+            <View style={{ zIndex: 100, marginBottom: Layout.spacing.lg }}>
               <AddressAutocomplete
                 label="Delivery Address *"
                 placeholder="Search delivery address"
@@ -268,13 +288,17 @@ export default function CreateOrderScreen() {
             </View>
           )}
 
+          {/* Order Details */}
+          <Text style={styles.sectionTitle}>Order Items</Text>
+
           <Input
             label="Order Description *"
             value={formData.description}
             onChangeText={(text) => setFormData({ ...formData, description: text })}
-            placeholder="Describe the order items"
+            placeholder="List items, quantities, special requests..."
             multiline
-            numberOfLines={3}
+            numberOfLines={4}
+            style={{ minHeight: 100, textAlignVertical: 'top' }}
           />
 
           <Input
@@ -307,67 +331,51 @@ export default function CreateOrderScreen() {
             )}
           </View>
 
-          {/* Total Summary */}
-          <View style={{ backgroundColor: '#F3F4F6', padding: 16, borderRadius: 8, marginBottom: 16 }}>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 }}>
-              <Text style={{ color: '#6B7280' }}>Subtotal</Text>
-              <Text style={{ fontWeight: '600' }}>${subtotal.toFixed(2)}</Text>
+          {/* Total Summary Card */}
+          <View style={styles.summaryCard}>
+            <View style={styles.summaryRow}>
+              <Text style={styles.summaryLabel}>Subtotal</Text>
+              <Text style={styles.summaryValue}>${subtotal.toFixed(2)}</Text>
             </View>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 }}>
-              <Text style={{ color: '#6B7280' }}>Tax ({taxRate}%)</Text>
-              <Text style={{ fontWeight: '600' }}>${taxAmount.toFixed(2)}</Text>
+            <View style={styles.summaryRow}>
+              <Text style={styles.summaryLabel}>Tax ({taxRate}%)</Text>
+              <Text style={styles.summaryValue}>${taxAmount.toFixed(2)}</Text>
             </View>
             {formData.delivery_required && (
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 }}>
-                <Text style={{ color: '#6B7280' }}>Delivery</Text>
-                <Text style={{ fontWeight: '600' }}>${deliveryFee.toFixed(2)}</Text>
+              <View style={styles.summaryRow}>
+                <Text style={styles.summaryLabel}>Delivery</Text>
+                <Text style={styles.summaryValue}>${deliveryFee.toFixed(2)}</Text>
               </View>
             )}
-            <View style={{ height: 1, backgroundColor: '#D1D5DB', marginVertical: 8 }} />
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-              <Text style={{ fontSize: 18, fontWeight: '700', color: '#111827' }}>Total</Text>
-              <Text style={{ fontSize: 18, fontWeight: '700', color: '#3B82F6' }}>${total.toFixed(2)}</Text>
+            <View style={styles.divider} />
+            <View style={styles.summaryRow}>
+              <Text style={styles.totalLabel}>Total</Text>
+              <Text style={styles.totalValue}>${total.toFixed(2)}</Text>
             </View>
           </View>
 
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Order Source *</Text>
-            <View style={styles.sourceContainer}>
-              {(['manual', 'phone', 'whatsapp', 'walk-in', 'Uber Eats', 'Deliveroo', 'Just Eat', 'Hungry Panda', 'Talabat'] as const).map((source) => (
-                <TouchableOpacity
-                  key={source}
+          {/* Source Selection */}
+          <Text style={styles.sectionTitle}>Order Source</Text>
+          <View style={styles.sourceContainer}>
+            {(['manual', 'phone', 'whatsapp', 'walk-in', 'Uber Eats', 'Deliveroo', 'Just Eat', 'Hungry Panda', 'Talabat'] as const).map((source) => (
+              <TouchableOpacity
+                key={source}
+                style={[
+                  styles.sourceChip,
+                  formData.source === source && styles.sourceChipActive,
+                ]}
+                onPress={() => setFormData({ ...formData, source })}
+              >
+                <Text
                   style={[
-                    styles.sourceButton,
-                    formData.source === source && styles.sourceButtonActive,
+                    styles.sourceText,
+                    formData.source === source && styles.sourceTextActive,
                   ]}
-                  onPress={() => setFormData({ ...formData, source })}
                 >
-                  <Text
-                    style={[
-                      styles.sourceText,
-                      formData.source === source && styles.sourceTextActive,
-                    ]}
-                  >
-                    {source.charAt(0).toUpperCase() + source.slice(1)}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </View>
-
-          <View style={styles.switchContainer}>
-            <View style={styles.switchLabel}>
-              <Text style={styles.switchText}>Delivery Required</Text>
-              <Text style={styles.switchSubtext}>
-                Toggle if this order needs delivery
-              </Text>
-            </View>
-            <Switch
-              value={formData.delivery_required}
-              onValueChange={(value) => setFormData({ ...formData, delivery_required: value })}
-              trackColor={{ false: '#D1D5DB', true: '#3B82F6' }}
-              thumbColor={formData.delivery_required ? '#FFFFFF' : '#F3F4F6'}
-            />
+                  {source.charAt(0).toUpperCase() + source.slice(1)}
+                </Text>
+              </TouchableOpacity>
+            ))}
           </View>
 
           <Button
@@ -375,10 +383,11 @@ export default function CreateOrderScreen() {
             onPress={handleSubmit}
             disabled={loading}
             style={styles.submitButton}
+            variant="primary"
           />
           <View style={{ height: 40 }} />
-        </ScrollView>
-      </View>
+        </View>
+      </ScreenContainer>
 
       {/* Customer Picker Modal */}
       <Modal
@@ -390,20 +399,20 @@ export default function CreateOrderScreen() {
         <View style={styles.modalContainer}>
           <View style={styles.modalHeader}>
             <Text style={styles.modalTitle}>Select Customer</Text>
-            <TouchableOpacity onPress={() => setShowCustomerPicker(false)}>
-              <X size={24} color="#111827" />
+            <TouchableOpacity onPress={() => setShowCustomerPicker(false)} style={styles.closeButton}>
+              <X size={24} color={Colors.text.primary} />
             </TouchableOpacity>
           </View>
 
           {loadingCustomers ? (
-            <ActivityIndicator size="large" color="#3B82F6" style={{ marginTop: 40 }} />
+            <ActivityIndicator size="large" color={Colors.primary} style={{ marginTop: 40 }} />
           ) : (
             <FlatList
               data={recentCustomers}
               keyExtractor={(item) => item.id}
-              contentContainerStyle={{ padding: 20 }}
+              contentContainerStyle={{ padding: Layout.spacing.md }}
               ListEmptyComponent={
-                <Text style={{ textAlign: 'center', color: '#6B7280', marginTop: 40 }}>
+                <Text style={styles.emptyListText}>
                   No recent customers found.
                 </Text>
               }
@@ -413,29 +422,22 @@ export default function CreateOrderScreen() {
                   onPress={() => selectCustomer(item)}
                 >
                   <View style={styles.customerAvatar}>
-                    <User size={24} color="#3B82F6" />
+                    <User size={24} color={Colors.primary} />
                   </View>
                   <View style={{ flex: 1 }}>
                     <Text style={styles.customerName}>{item.name}</Text>
                     <View style={styles.customerDetailRow}>
-                      <Phone size={12} color="#6B7280" />
+                      <Phone size={12} color={Colors.text.secondary} />
                       <Text style={styles.customerDetailText}>{item.phone}</Text>
                     </View>
                     {item.address_text && (
                       <View style={styles.customerDetailRow}>
-                        <MapPin size={12} color="#6B7280" />
+                        <MapPin size={12} color={Colors.text.secondary} />
                         <Text style={styles.customerDetailText} numberOfLines={1}>{item.address_text}</Text>
                       </View>
                     )}
                   </View>
-                  {item.last_order_at && (
-                    <View style={{ alignItems: 'flex-end' }}>
-                      <Text style={{ fontSize: 11, color: '#9CA3AF' }}>Last Order</Text>
-                      <Text style={{ fontSize: 12, color: '#6B7280' }}>
-                        {new Date(item.last_order_at).toLocaleDateString()}
-                      </Text>
-                    </View>
-                  )}
+                  <ChevronRight size={16} color={Colors.text.placeholder} />
                 </TouchableOpacity>
               )}
             />
@@ -447,47 +449,59 @@ export default function CreateOrderScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F9FAFB',
-  },
   header: {
-    padding: 20,
-    paddingTop: 60,
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
-  },
-  headerContent: {
-    width: '100%',
-    maxWidth: 600,
-    alignSelf: 'center',
+    marginBottom: Layout.spacing.lg,
   },
   title: {
     fontSize: 28,
-    fontWeight: '700',
-    color: '#111827',
+    fontWeight: '800',
+    color: Colors.text.primary,
     marginBottom: 4,
+    letterSpacing: -0.5,
   },
   subtitle: {
     fontSize: 16,
-    color: '#6B7280',
+    color: Colors.text.secondary,
   },
   form: {
-    padding: 20,
     width: '100%',
-    maxWidth: 600,
-    alignSelf: 'center', // Center the scrollview itself
-    flex: 1, // ensure it takes space
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: Colors.text.primary,
+    marginTop: Layout.spacing.md,
+    marginBottom: Layout.spacing.md,
+    letterSpacing: -0.3,
+  },
+  recentButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    backgroundColor: Colors.surface,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    marginBottom: 8,
+    marginTop: -8,
+  },
+  recentButtonText: {
+    color: Colors.primary,
+    fontWeight: '600',
+    fontSize: 13,
   },
   switchContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    padding: 16,
-    borderRadius: 8,
-    marginBottom: 16,
+    backgroundColor: Colors.surface,
+    padding: Layout.spacing.md,
+    borderRadius: Layout.borderRadius.md,
+    marginBottom: Layout.spacing.lg,
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
   switchLabel: {
     flex: 1,
@@ -495,128 +509,141 @@ const styles = StyleSheet.create({
   switchText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#374151',
+    color: Colors.text.primary,
     marginBottom: 2,
   },
   switchSubtext: {
     fontSize: 14,
-    color: '#6B7280',
+    color: Colors.text.secondary,
   },
-  inputGroup: {
-    marginBottom: 16,
+  summaryCard: {
+    backgroundColor: Colors.surface,
+    padding: Layout.spacing.lg,
+    borderRadius: Layout.borderRadius.lg,
+    marginBottom: Layout.spacing.lg,
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
-  label: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#374151',
-    marginBottom: 6,
+  summaryRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  summaryLabel: {
+    color: Colors.text.secondary,
+    fontSize: 15,
+  },
+  summaryValue: {
+    fontWeight: '600',
+    color: Colors.text.primary,
+    fontSize: 15,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: Colors.border,
+    marginVertical: 12,
+  },
+  totalLabel: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: Colors.text.primary,
+  },
+  totalValue: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: Colors.primary,
   },
   sourceContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
+    marginBottom: Layout.spacing.lg,
   },
-  sourceButton: {
+  sourceChip: {
     paddingHorizontal: 16,
     paddingVertical: 8,
-    borderRadius: 20,
+    borderRadius: 999,
     borderWidth: 1,
-    borderColor: '#D1D5DB',
-    backgroundColor: '#FFFFFF',
+    borderColor: Colors.border,
+    backgroundColor: Colors.surface,
   },
-  sourceButtonActive: {
-    borderColor: '#3B82F6',
-    backgroundColor: '#EFF6FF',
+  sourceChipActive: {
+    borderColor: Colors.primary,
+    backgroundColor: Colors.primary,
   },
   sourceText: {
     fontSize: 14,
-    color: '#4B5563',
+    color: Colors.text.secondary,
+    fontWeight: '500',
   },
   sourceTextActive: {
-    color: '#3B82F6',
+    color: Colors.primaryForeground,
     fontWeight: '600',
   },
   submitButton: {
-    marginTop: 20,
-  },
-  recentButton: {
-    position: 'absolute',
-    right: 0,
-    top: -4,
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#EFF6FF',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16
-  },
-  recentButtonText: {
-    color: '#3B82F6',
-    fontWeight: '600',
-    fontSize: 13
+    marginTop: Layout.spacing.sm,
   },
   modalContainer: {
     flex: 1,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: Colors.background,
   },
   modalHeader: {
-    padding: 20,
-    backgroundColor: '#FFFFFF',
+    padding: Layout.spacing.lg,
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
+    borderBottomColor: Colors.border,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 2,
-    zIndex: 10,
   },
   modalTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: '700',
-    color: '#111827',
+    color: Colors.text.primary,
+  },
+  closeButton: {
+    padding: 4,
+  },
+  emptyListText: {
+    textAlign: 'center',
+    color: Colors.text.secondary,
+    marginTop: 40,
+    fontSize: 15,
   },
   customerItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: Colors.surface,
     padding: 16,
-    borderRadius: 16,
+    borderRadius: Layout.borderRadius.lg,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: 'transparent',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
+    borderColor: Colors.border,
   },
   customerAvatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: '#EFF6FF',
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: Colors.background,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 16,
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
   customerName: {
     fontSize: 16,
-    fontWeight: '700',
-    color: '#111827',
+    fontWeight: '600',
+    color: Colors.text.primary,
     marginBottom: 4,
   },
   customerDetailRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    marginBottom: 4,
+    marginBottom: 2,
   },
   customerDetailText: {
-    fontSize: 14,
-    color: '#6B7280',
+    fontSize: 13,
+    color: Colors.text.secondary,
   },
 });

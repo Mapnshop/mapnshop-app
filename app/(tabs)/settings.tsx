@@ -7,6 +7,9 @@ import { businessApi, membersApi } from '@/lib/api';
 import { BusinessMember } from '@/types';
 import { Button } from '@/components/Button';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
+import { ScreenContainer } from '@/components/ScreenContainer';
+import { Colors } from '@/constants/Colors';
+import { Layout } from '@/constants/Layout';
 import { BusinessProfileSection } from '@/components/settings/BusinessProfileSection';
 import { OrderDefaultsSection } from '@/components/settings/OrderDefaultsSection';
 import { BusinessHoursSection } from '@/components/settings/BusinessHoursSection';
@@ -248,155 +251,89 @@ export default function SettingsScreen() {
   }
 
   return (
-    <View style={styles.container}>
+    <ScreenContainer scrollable>
       <View style={styles.header}>
-        <View style={styles.headerContent}>
-          <Text style={styles.title}>Settings</Text>
-          <Text style={styles.subtitle}>Manage your business information</Text>
-        </View>
+        <Text style={styles.title}>Settings</Text>
+        <Text style={styles.subtitle}>Manage your business information</Text>
       </View>
 
-      <FlatList
-        style={styles.contentList}
-        data={[]}
-        renderItem={null}
-        ListHeaderComponent={
-          <View style={styles.sectionsContainer}>
-            <BusinessProfileSection
-              business={business}
-              formData={formData}
-              setFormData={setFormData}
-              editing={editingProfile}
-              setEditing={setEditingProfile}
-              loading={loading}
-              onSave={handleSave}
-              onCancel={() => {
-                setEditingProfile(false);
-                // Reset form data logic here if strict reset needed
-              }}
-            />
+      <View style={styles.content}>
+        <BusinessProfileSection
+          business={business}
+          formData={formData}
+          setFormData={setFormData}
+          editing={editingProfile}
+          setEditing={setEditingProfile}
+          loading={loading}
+          onSave={handleSave}
+          onCancel={() => {
+            setEditingProfile(false);
+          }}
+        />
 
-            <BusinessHoursSection
-              business={business}
-              formData={formData}
-              setFormData={setFormData}
-              loading={loading}
-              onSave={handleSaveHours}
-            />
+        <BusinessHoursSection
+          business={business}
+          formData={formData}
+          setFormData={setFormData}
+          loading={loading}
+          onSave={handleSaveHours}
+        />
 
-            <OrderDefaultsSection
-              business={business}
-              formData={formData}
-              setFormData={setFormData}
-              editing={editingDefaults}
-              setEditing={setEditingDefaults}
-              loading={loading}
-              onSave={handleSave}
-              onCancel={() => setEditingDefaults(false)}
-            />
+        <OrderDefaultsSection
+          business={business}
+          formData={formData}
+          setFormData={setFormData}
+          editing={editingDefaults}
+          setEditing={setEditingDefaults}
+          loading={loading}
+          onSave={handleSave}
+          onCancel={() => setEditingDefaults(false)}
+        />
 
-            <TeamManagementSection
-              business={business}
-              members={members}
-              inviteEmail={inviteEmail}
-              setInviteEmail={setInviteEmail}
-              onInvite={handleInvite}
-              inviting={inviting}
-              onRemove={handleRemoveMember}
-              onShare={handleShareInvite}
-              showTeam={showTeam}
-              setShowTeam={setShowTeam}
-            />
+        <TeamManagementSection
+          business={business}
+          members={members}
+          inviteEmail={inviteEmail}
+          setInviteEmail={setInviteEmail}
+          onInvite={handleInvite}
+          inviting={inviting}
+          onRemove={handleRemoveMember}
+          onShare={handleShareInvite}
+          showTeam={showTeam}
+          setShowTeam={setShowTeam}
+        />
 
-            <NotificationsSection />
+        <NotificationsSection />
 
-            <DataExportSection businessId={business.id} />
+        <DataExportSection businessId={business.id} />
 
-            <HelpSupportSection />
+        <HelpSupportSection />
 
-            <HelpSupportSection />
+        <AccountSecuritySection />
 
-            <AccountSecuritySection />
-
-            <View style={{ height: 40 }} />
-
-            <View style={{ height: 40 }} />
-          </View>
-        }
-      />
-    </View>
+        {/* Spacer for bottom tab bar */}
+        <View style={{ height: 40 }} />
+      </View>
+    </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F9FAFB',
-  },
   header: {
-    padding: 20,
-    paddingTop: 60,
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
-    zIndex: 10,
-  },
-  headerContent: {
-    width: '100%',
-    maxWidth: 800,
-    alignSelf: 'center',
-  },
-  contentList: {
-    flex: 1,
-    width: '100%',
-  },
-  sectionsContainer: {
-    paddingTop: 20,
-    width: '100%',
-    maxWidth: 800,
-    alignSelf: 'center',
+    marginBottom: Layout.spacing.lg,
   },
   title: {
     fontSize: 28,
-    fontWeight: '700',
-    color: '#111827',
+    fontWeight: '800',
+    color: Colors.text.primary,
     marginBottom: 4,
+    letterSpacing: -0.5,
   },
   subtitle: {
     fontSize: 16,
-    color: '#6B7280',
+    color: Colors.text.secondary,
   },
-  section: {
-    marginHorizontal: 20,
-    marginBottom: 20,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    padding: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    marginBottom: 12,
-    color: '#111827'
-  },
-  accountInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 20,
-    gap: 8,
-  },
-  accountLabel: {
-    fontSize: 16,
-    color: '#6B7280',
-  },
-  accountValue: {
-    fontSize: 16,
-    color: '#111827',
-    fontWeight: '500',
+  content: {
+    gap: Layout.spacing.lg,
   },
 });

@@ -7,6 +7,8 @@ import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { OrderCard } from '@/components/OrderCard';
 import { router, useFocusEffect } from 'expo-router';
 import { Search, Plus, Filter, Inbox } from 'lucide-react-native';
+import { Colors } from '@/constants/Colors';
+import { Layout } from '@/constants/Layout';
 
 type FilterType = 'active' | 'completed' | 'cancelled' | 'all';
 
@@ -108,7 +110,7 @@ export default function InboxScreen() {
     <View style={styles.emptyState}>
       {activeFilter === 'active' && !searchQuery ? (
         <>
-          <Inbox size={48} color="#D1D5DB" />
+          <Inbox size={48} color={Colors.border} />
           <Text style={styles.emptyText}>All caught up!</Text>
           <Text style={styles.emptySubtext}>No active orders right now.</Text>
           <TouchableOpacity
@@ -120,7 +122,7 @@ export default function InboxScreen() {
         </>
       ) : (
         <>
-          <Search size={48} color="#D1D5DB" />
+          <Search size={48} color={Colors.border} />
           <Text style={styles.emptyText}>No orders found</Text>
           <Text style={styles.emptySubtext}>Try adjusting your filters or search.</Text>
         </>
@@ -135,16 +137,15 @@ export default function InboxScreen() {
         <View style={styles.headerContent}>
           <View style={styles.titleRow}>
             <Text style={styles.title}>Inbox</Text>
-            {/* Optional: Add a small 'New Order' icon button if strict one-handed usage preferred */}
           </View>
 
           {/* Search Bar */}
           <View style={styles.searchContainer}>
-            <Search size={20} color="#9CA3AF" style={styles.searchIcon} />
+            <Search size={20} color={Colors.text.placeholder} style={styles.searchIcon} />
             <TextInput
               style={styles.searchInput}
               placeholder="Search name, phone, order ID..."
-              placeholderTextColor="#9CA3AF"
+              placeholderTextColor={Colors.text.placeholder}
               value={searchQuery}
               onChangeText={setSearchQuery}
             />
@@ -198,7 +199,6 @@ export default function InboxScreen() {
                   }
                 } catch (error) {
                   console.error('Failed to update status:', error);
-                  // Optional: Show toast/alert
                 }
               }}
             />
@@ -224,15 +224,15 @@ export default function InboxScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F3F4F6', // Slightly darker than white for contrast
+    backgroundColor: Colors.surface, // Matches the page background off-white
   },
   header: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: Colors.background,
     paddingTop: Platform.OS === 'ios' ? 60 : 40,
-    paddingBottom: 16,
-    paddingHorizontal: 16,
+    paddingBottom: Layout.spacing.lg,
+    paddingHorizontal: Layout.spacing.lg,
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
+    borderBottomColor: Colors.border,
   },
   headerContent: {
     width: '100%',
@@ -243,23 +243,24 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: Layout.spacing.md,
   },
   title: {
     fontSize: 28,
     fontWeight: '800',
-    color: '#111827',
+    color: Colors.text.primary,
+    letterSpacing: -0.5,
   },
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F9FAFB',
-    borderRadius: 12,
+    backgroundColor: Colors.surface,
+    borderRadius: Layout.borderRadius.lg,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
-    paddingHorizontal: 12,
-    height: 44,
-    marginBottom: 12,
+    borderColor: Colors.border,
+    paddingHorizontal: Layout.spacing.md,
+    height: 48,
+    marginBottom: Layout.spacing.md,
   },
   searchIcon: {
     marginRight: 8,
@@ -267,7 +268,7 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     fontSize: 16,
-    color: '#111827',
+    color: Colors.text.primary,
     height: '100%',
   },
   filterRow: {
@@ -276,26 +277,27 @@ const styles = StyleSheet.create({
   },
   filterChip: {
     paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    backgroundColor: '#F3F4F6',
+    paddingVertical: 6,
+    borderRadius: 999, // Pill shape
+    backgroundColor: Colors.surface,
     borderWidth: 1,
-    borderColor: 'transparent',
+    borderColor: Colors.border,
   },
   activeFilterChip: {
-    backgroundColor: '#EFF6FF',
-    borderColor: '#3B82F6',
+    backgroundColor: Colors.primary,
+    borderColor: Colors.primary,
   },
   filterText: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#6B7280',
+    fontWeight: '500',
+    color: Colors.text.secondary,
   },
   activeFilterText: {
-    color: '#3B82F6',
+    color: Colors.primaryForeground,
+    fontWeight: '600',
   },
   listContent: {
-    padding: 16,
+    padding: Layout.spacing.md,
     paddingBottom: 100, // Space for tab bar
     flexGrow: 1,
     width: '100%',
@@ -305,29 +307,29 @@ const styles = StyleSheet.create({
   emptyState: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingTop: 60,
+    paddingTop: 80,
   },
   emptyText: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#374151',
+    color: Colors.text.primary,
     marginTop: 16,
   },
   emptySubtext: {
     fontSize: 14,
-    color: '#6B7280',
+    color: Colors.text.secondary,
     marginTop: 4,
     marginBottom: 24,
   },
   createButton: {
-    backgroundColor: '#3B82F6',
+    backgroundColor: Colors.primary,
     paddingHorizontal: 24,
     paddingVertical: 12,
-    borderRadius: 24,
+    borderRadius: 999,
   },
   createButtonText: {
-    color: '#FFFFFF',
+    color: Colors.primaryForeground,
     fontWeight: '600',
-    fontSize: 16,
+    fontSize: 15,
   },
 });

@@ -60,17 +60,69 @@ export const authApi = {
   },
 
   async deleteUser() {
-    // 1. Delete Business Data (Soft Delete or Hard Delete based on policy)
-    // For now, we rely on RLS/Cascades or manual deletion.
-    // Auth User deletion requires Admin API or RPC.
-    // We will sign out and perhaps call an RPC if you have one, 
-    // otherwise we just wipe the local session as "Delete" for the MVP client-side.
-    // Ideally: await supabase.rpc('delete_user_account');
-
-    // For this MVP, we will try to delete the business record owned by user.
+    // 1. Get the current user and their business
     const user = await this.getCurrentUser();
-    if (user) {
-      await supabase.from('businesses').delete().eq('owner_id', user.id);
+    if (!user) return;
+
+    // Fetch the business to get its ID
+    const { data: business } = await supabase
+      .from('businesses')
+      .select('id')
+      .eq('owner_id', user.id)
+      .single();
+
+    if (business) {
+      const businessId = business.id;
+
+      // 2. Delete Order Dependencies (Activity & Deliveries)
+      // We need order IDs first
+      const { data: orders } = await supabase
+        .from('orders')
+        .select('id')
+        .eq('business_id', businessId);
+
+      if (orders && orders.length > 0) {
+        const orderIds = orders.map(o => o.id);
+
+        // Delete Activity
+        await supabase
+          .from('order_activity')
+          .delete()
+          .in('order_id', orderIds);
+
+        // Delete Deliveries
+        await supabase
+          .from('deliveries')
+          .delete()
+          .in('order_id', orderIds);
+
+        // Delete Orders
+        await supabase
+          .from('orders')
+          .delete()
+          .eq('business_id', businessId);
+      }
+
+      // 3. Delete Business Relations
+      await supabase
+        .from('customers')
+        .delete()
+        .eq('business_id', businessId);
+
+      await supabase
+        .from('business_members')
+        .delete()
+        .eq('business_id', businessId);
+
+      // 4. Finally Delete Business
+      const { error } = await supabase
+        .from('businesses')
+        .delete()
+        .eq('id', businessId);
+
+      if (error) {
+        throw new ApiError('Failed to delete business: ' + error.message);
+      }
     }
   }
 };
