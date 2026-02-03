@@ -639,7 +639,6 @@ export const dashboardApi = {
 export const storageApi = {
   async uploadImage(uri: string): Promise<string> {
     try {
-      console.log("Starting upload for URI:", uri);
 
       const response = await fetch(uri);
       const blob = await response.blob();
@@ -660,17 +659,14 @@ export const storageApi = {
         });
 
       if (error) {
-        console.error("Supabase Storage Upload Error (Detailed):", JSON.stringify(error, null, 2));
+        console.error("Supabase Storage Upload Error:", error);
         throw error;
       }
-
-      console.log("Upload successful, path:", data.path);
 
       const { data: { publicUrl } } = supabase.storage
         .from('attachments')
         .getPublicUrl(filename);
 
-      console.log("Public URL generated:", publicUrl);
       return publicUrl;
     } catch (error: any) {
       console.error('Upload trace failed:', error);
@@ -689,14 +685,11 @@ export const storageApi = {
         path = pathOrUrl.split('/attachments/')[1];
       }
 
-      console.log("Deleting image at path:", path);
-
       const { error } = await supabase.storage
         .from('attachments')
         .remove([path]);
 
       if (error) throw error;
-      console.log("Delete successful");
     } catch (error: any) {
       console.error('Delete failed:', error);
       throw new ApiError('Failed to delete image: ' + (error.message || JSON.stringify(error)));

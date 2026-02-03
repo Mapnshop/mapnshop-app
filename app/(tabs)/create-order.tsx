@@ -135,7 +135,11 @@ export default function CreateOrderScreen() {
           phone: formData.customer_phone.trim(),
           address_text: formData.address.trim(),
           last_order_at: new Date().toISOString()
-        }).catch(err => console.log('Background customer save failed', err));
+        }).catch(err => {
+          console.error('Background customer save failed:', err);
+          // Note: This is a background operation, so we don't block order creation
+          // The customer data will be saved on the next order
+        });
       }
 
       setLoading(false);
@@ -229,13 +233,11 @@ export default function CreateOrderScreen() {
                   setFormData({ ...formData, customer_phone: text });
                   if (text.length >= 3 && business) {
                     try {
-                      console.log('Searching for:', text);
                       const customers = await customersApi.search(business.id, text);
-                      console.log('Found customers:', customers.length);
                       setSuggestedCustomers(customers);
                       setShowSuggestions(customers.length > 0);
                     } catch (e) {
-                      console.error('Search failed', e);
+                      console.error('Customer search failed:', e);
                     }
                   } else {
                     setShowSuggestions(false);
