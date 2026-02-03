@@ -1,10 +1,12 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Users, Trash2, Share2 } from 'lucide-react-native';
 import { Input } from '@/components/Input';
 import { Button } from '@/components/Button';
 import { SettingsSection } from './SettingsSection';
 import { BusinessMember, Business } from '@/types';
+import { Colors } from '@/constants/Colors';
+import { Layout } from '@/constants/Layout';
 
 interface TeamManagementSectionProps {
     business: Business;
@@ -32,20 +34,18 @@ export const TeamManagementSection = ({
     setShowTeam,
 }: TeamManagementSectionProps) => {
 
-    // Only owner should access detailed controls (ensured by props or logic above)
-
     return (
         <SettingsSection
             title="Team Management"
             icon={Users}
             headerAction={
                 <TouchableOpacity onPress={() => setShowTeam(!showTeam)}>
-                    <Text style={{ color: '#3B82F6' }}>{showTeam ? 'Hide' : 'Manage'}</Text>
+                    <Text style={styles.toggleText}>{showTeam ? 'Hide' : 'Manage'}</Text>
                 </TouchableOpacity>
             }
         >
             {showTeam && (
-                <View style={{ marginTop: 8 }}>
+                <View style={styles.content}>
                     <View style={styles.inviteRow}>
                         <Input
                             placeholder="staff@email.com"
@@ -53,48 +53,62 @@ export const TeamManagementSection = ({
                             onChangeText={setInviteEmail}
                             autoCapitalize="none"
                             keyboardType="email-address"
-                            containerStyle={{ flex: 1, marginBottom: 0 }}
+                            containerStyle={styles.inputContainer}
                         />
                         <Button
                             title={inviting ? "..." : "Invite"}
                             onPress={onInvite}
                             disabled={inviting}
                             size="small"
-                            style={{ marginLeft: 8, height: 50, justifyContent: 'center' }}
+                            style={styles.inviteButton}
                         />
                     </View>
 
-                    {members.map(member => (
-                        <View
-                            key={member.id}
-                            style={[
-                                styles.memberCard,
-                                member.status === 'invited' && styles.memberCardPending
-                            ]}
-                        >
-                            <View>
-                                <Text style={styles.memberEmail}>{member.email || 'Unknown User'}</Text>
-                                <View style={styles.roleBadge}>
-                                    <Text style={[
-                                        styles.roleText,
-                                        member.status === 'invited' && styles.roleTextPending
-                                    ]}>
-                                        {member.role.toUpperCase()} • {member.status === 'invited' ? '⏳ PENDING' : '✓ ACTIVE'}
-                                    </Text>
+                    {members.length === 0 ? (
+                        <View style={styles.emptyState}>
+                            <Users size={32} color={Colors.text.placeholder} />
+                            <Text style={styles.emptyText}>No team members yet</Text>
+                            <Text style={styles.emptySubtext}>Invite someone to get started</Text>
+                        </View>
+                    ) : (
+                        members.map(member => (
+                            <View
+                                key={member.id}
+                                style={[
+                                    styles.memberCard,
+                                    member.status === 'invited' && styles.memberCardPending
+                                ]}
+                            >
+                                <View style={styles.memberInfo}>
+                                    <Text style={styles.memberEmail}>{member.email || 'Unknown User'}</Text>
+                                    <View style={styles.roleBadge}>
+                                        <Text style={[
+                                            styles.roleText,
+                                            member.status === 'invited' && styles.roleTextPending
+                                        ]}>
+                                            {member.role.toUpperCase()} • {member.status === 'invited' ? '⏳ PENDING' : '✓ ACTIVE'}
+                                        </Text>
+                                    </View>
+                                </View>
+                                <View style={styles.actions}>
+                                    <TouchableOpacity
+                                        onPress={() => onShare(member.email || '')}
+                                        style={styles.actionButton}
+                                    >
+                                        <Share2 size={20} color={Colors.primary} />
+                                    </TouchableOpacity>
+                                    {member.role !== 'owner' && (
+                                        <TouchableOpacity
+                                            onPress={() => onRemove(member.id)}
+                                            style={styles.actionButton}
+                                        >
+                                            <Trash2 size={20} color={Colors.status.error} />
+                                        </TouchableOpacity>
+                                    )}
                                 </View>
                             </View>
-                            <View style={{ flexDirection: 'row', gap: 12 }}>
-                                <TouchableOpacity onPress={() => onShare(member.email || '')}>
-                                    <Share2 size={18} color="#3B82F6" />
-                                </TouchableOpacity>
-                                {member.role !== 'owner' && (
-                                    <TouchableOpacity onPress={() => onRemove(member.id)}>
-                                        <Trash2 size={18} color="#EF4444" />
-                                    </TouchableOpacity>
-                                )}
-                            </View>
-                        </View>
-                    ))}
+                        ))
+                    )}
                 </View>
             )}
         </SettingsSection>
@@ -102,42 +116,97 @@ export const TeamManagementSection = ({
 };
 
 const styles = StyleSheet.create({
+    content: {
+        marginTop: Layout.spacing.md,
+    },
+    toggleText: {
+        color: Colors.primary,
+        fontSize: 14,
+        fontWeight: '600',
+    },
     inviteRow: {
         flexDirection: 'row',
         alignItems: 'flex-start',
-        marginBottom: 16,
+        marginBottom: Layout.spacing.lg,
+        gap: Layout.spacing.sm,
+    },
+    inputContainer: {
+        flex: 1,
+        marginBottom: 0,
+    },
+    inviteButton: {
+        height: 50,
+        justifyContent: 'center',
+        paddingHorizontal: Layout.spacing.lg,
+    },
+    emptyState: {
+        alignItems: 'center',
+        paddingVertical: Layout.spacing.xl * 2,
+        gap: Layout.spacing.sm,
+    },
+    emptyText: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: Colors.text.secondary,
+        marginTop: Layout.spacing.sm,
+    },
+    emptySubtext: {
+        fontSize: 14,
+        color: Colors.text.placeholder,
     },
     memberCard: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        padding: 12,
-        backgroundColor: '#F9FAFB',
-        borderRadius: 8,
-        marginBottom: 8,
+        padding: Layout.spacing.md,
+        backgroundColor: Colors.surface,
+        borderRadius: Layout.borderRadius.lg,
+        marginBottom: Layout.spacing.md,
         borderWidth: 1,
-        borderColor: '#E5E7EB',
-    },
-    memberEmail: {
-        fontSize: 14,
-        fontWeight: '600',
-        color: '#111827',
-    },
-    roleBadge: {
-        marginTop: 2,
-    },
-    roleText: {
-        fontSize: 10,
-        color: '#6B7280',
-        fontWeight: '500',
+        borderColor: Colors.border,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.05,
+        shadowRadius: 2,
+        elevation: 1,
     },
     memberCardPending: {
         backgroundColor: '#FEF3C7',
         borderColor: '#F59E0B',
+        borderWidth: 2,
         borderStyle: 'dashed',
+    },
+    memberInfo: {
+        flex: 1,
+    },
+    memberEmail: {
+        fontSize: 15,
+        fontWeight: '600',
+        color: Colors.text.primary,
+        marginBottom: 4,
+    },
+    roleBadge: {
+        alignSelf: 'flex-start',
+    },
+    roleText: {
+        fontSize: 11,
+        color: Colors.text.secondary,
+        fontWeight: '600',
+        letterSpacing: 0.3,
     },
     roleTextPending: {
         color: '#D97706',
-        fontWeight: '600',
+    },
+    actions: {
+        flexDirection: 'row',
+        gap: Layout.spacing.sm,
+        marginLeft: Layout.spacing.md,
+    },
+    actionButton: {
+        padding: Layout.spacing.sm,
+        borderRadius: Layout.borderRadius.md,
+        backgroundColor: Colors.background,
+        borderWidth: 1,
+        borderColor: Colors.border,
     },
 });
