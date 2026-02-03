@@ -65,15 +65,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: 16,
+    gap: 12,
   },
   headerTitleRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
+    flex: 1,
+    flexShrink: 1,
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
     color: '#111827',
+    flexShrink: 1,
   },
 });
