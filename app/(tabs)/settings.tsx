@@ -174,10 +174,11 @@ Once you sign up with ${email}, you'll automatically have access to ${business?.
           }
           document.body.removeChild(textArea);
         }
-        Alert.alert('Success', 'Invitation message copied to clipboard! Share it with your team member.');
+        // Use native browser alert for web
+        window.alert('✅ Invitation copied to clipboard!\n\nShare it with your team member via email, SMS, or messaging app.');
       } catch (err) {
         console.error('Failed to copy', err);
-        Alert.alert('Error', 'Failed to copy to clipboard. Please manually select and copy.');
+        window.alert('❌ Failed to copy to clipboard.\n\nPlease manually select and copy the invitation message.');
       }
     } else {
       try {
