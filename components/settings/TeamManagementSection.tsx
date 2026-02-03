@@ -65,11 +65,22 @@ export const TeamManagementSection = ({
                     </View>
 
                     {members.map(member => (
-                        <View key={member.id} style={styles.memberCard}>
+                        <View
+                            key={member.id}
+                            style={[
+                                styles.memberCard,
+                                member.status === 'invited' && styles.memberCardPending
+                            ]}
+                        >
                             <View>
                                 <Text style={styles.memberEmail}>{member.email || 'Unknown User'}</Text>
                                 <View style={styles.roleBadge}>
-                                    <Text style={styles.roleText}>{member.role.toUpperCase()} • {member.status}</Text>
+                                    <Text style={[
+                                        styles.roleText,
+                                        member.status === 'invited' && styles.roleTextPending
+                                    ]}>
+                                        {member.role.toUpperCase()} • {member.status === 'invited' ? '⏳ PENDING' : '✓ ACTIVE'}
+                                    </Text>
                                 </View>
                             </View>
                             <View style={{ flexDirection: 'row', gap: 12 }}>
@@ -119,5 +130,14 @@ const styles = StyleSheet.create({
         fontSize: 10,
         color: '#6B7280',
         fontWeight: '500',
+    },
+    memberCardPending: {
+        backgroundColor: '#FEF3C7',
+        borderColor: '#F59E0B',
+        borderStyle: 'dashed',
+    },
+    roleTextPending: {
+        color: '#D97706',
+        fontWeight: '600',
     },
 });

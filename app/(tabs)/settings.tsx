@@ -131,15 +131,10 @@ export default function SettingsScreen() {
     try {
       await membersApi.invite(business.id, emailToAdd, 'staff');
       setInviteEmail('');
-      Alert.alert(
-        'Member Added',
-        'Please ask them to sign up with this email address to access your business.',
-        [
-          { text: 'OK' },
-          { text: 'Share Invite', onPress: () => handleShareInvite(emailToAdd) }
-        ]
-      );
       loadMembers();
+
+      // Automatically trigger share dialog
+      handleShareInvite(emailToAdd);
     } catch (error: any) {
       Alert.alert('Error', error.message || 'Failed to invite');
     } finally {
@@ -148,7 +143,16 @@ export default function SettingsScreen() {
   };
 
   const handleShareInvite = async (email: string) => {
-    const message = `You've been invited to join ${business?.name} on Mapnshop. Please download the app and sign up with your email: ${email}`;
+    const message = `🎉 You've been invited to join ${business?.name} on Mapnshop!
+
+📧 Sign up with this email: ${email}
+
+📱 Download the app:
+• iOS: https://apps.apple.com/app/mapnshop (coming soon)
+• Android: https://play.google.com/store/apps/mapnshop (coming soon)
+• Web: https://mapnshop.app
+
+Once you sign up with ${email}, you'll automatically have access to ${business?.name}.`;
 
     if (Platform.OS === 'web') {
       try {
@@ -170,7 +174,7 @@ export default function SettingsScreen() {
           }
           document.body.removeChild(textArea);
         }
-        window.alert('Invite message copied to clipboard!'); // Use window.alert for direct blocking feedback on web
+        Alert.alert('Success', 'Invitation message copied to clipboard! Share it with your team member.');
       } catch (err) {
         console.error('Failed to copy', err);
         Alert.alert('Error', 'Failed to copy to clipboard. Please manually select and copy.');
