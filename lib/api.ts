@@ -361,8 +361,11 @@ export const customersApi = {
       .or(`name.ilike.%${query}%,phone.ilike.%${query}%`)
       .limit(5);
 
-    if (error) throw new ApiError(error.message);
-    return data as Customer[];
+    if (error) {
+      console.error('Search API Error:', error);
+      throw new ApiError(error.message);
+    }
+    return (data || []) as Customer[];
   },
 
   async getStats(customerId: string) {

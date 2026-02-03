@@ -23,6 +23,10 @@ export default function CreateOrderScreen() {
   const [recentCustomers, setRecentCustomers] = useState<Customer[]>([]);
   const [loadingCustomers, setLoadingCustomers] = useState(false);
 
+  // Auto-suggestions State
+  const [suggestedCustomers, setSuggestedCustomers] = useState<Customer[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+
   // Form State
   const [formData, setFormData] = useState({
     customer_name: '',
@@ -225,13 +229,48 @@ export default function CreateOrderScreen() {
                   setFormData({ ...formData, customer_phone: text });
                   if (text.length >= 3 && business) {
                     try {
+                      console.log('Searching for:', text);
                       const customers = await customersApi.search(business.id, text);
-                    } catch (e) { }
+                      console.log('Found customers:', customers.length);
+                      setSuggestedCustomers(customers);
+                      setShowSuggestions(customers.length > 0);
+                    } catch (e) {
+                      console.error('Search failed', e);
+                    }
+                  } else {
+                    setShowSuggestions(false);
                   }
                 }}
                 placeholder="Enter phone number"
                 keyboardType="phone-pad"
               />
+
+              {/* Suggestions List */}
+              {showSuggestions && suggestedCustomers.length > 0 && (
+                <View style={styles.suggestionsContainer}>
+                  {suggestedCustomers.map((customer) => (
+                    <TouchableOpacity
+                      key={customer.id}
+                      style={styles.suggestionItem}
+                      onPress={() => {
+                        setFormData(prev => ({
+                          ...prev,
+                          customer_name: customer.name,
+                          customer_phone: customer.phone,
+                          address: customer.address_text || '',
+                        }));
+                        setShowSuggestions(false);
+                      }}
+                    >
+                      <View>
+                        <Text style={styles.suggestionName}>{customer.name}</Text>
+                        <Text style={styles.suggestionPhone}>{customer.phone}</Text>
+                      </View>
+                      <ChevronRight size={14} color={Colors.text.placeholder} />
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              )}
 
               {/* Float 'Recent' button over the input or near label? 
                     Better to put it in a row with Label or below input. 
@@ -644,6 +683,43 @@ const styles = StyleSheet.create({
   },
   customerDetailText: {
     fontSize: 13,
+    color: Colors.text.secondary,
+  },
+  /* Suggestions */
+  suggestionsContainer: {
+    position: 'absolute',
+    top: '100%',
+    left: 0,
+    right: 0,
+    zIndex: 1000,
+    backgroundColor: Colors.surface,
+    borderRadius: Layout.borderRadius.md,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    paddingVertical: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 5,
+    marginTop: 4,
+  },
+  suggestionItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
+  },
+  suggestionName: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: Colors.text.primary,
+  },
+  suggestionPhone: {
+    fontSize: 12,
     color: Colors.text.secondary,
   },
 });

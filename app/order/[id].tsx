@@ -10,6 +10,8 @@ import { ArrowLeft, Phone, MapPin, Clock, Package, Truck, AlertTriangle, Edit2, 
 import * as ImagePicker from 'expo-image-picker';
 import { CustomerStatsModal } from '@/components/CustomerStatsModal';
 import { useBusiness } from '@/contexts/BusinessContext';
+import { Colors } from '@/constants/Colors';
+
 
 
 
@@ -336,11 +338,11 @@ export default function OrderDetailsScreen() {
 
   const getStatusColor = (status: Order['status']) => {
     switch (status) {
-      case 'created': return '#EF4444';
-      case 'preparing': return '#F59E0B';
-      case 'ready': return '#3B82F6';
-      case 'completed': return '#10B981';
-      default: return '#6B7280';
+      case 'created': return Colors.status.error;
+      case 'preparing': return Colors.status.warning;
+      case 'ready': return Colors.status.info;
+      case 'completed': return Colors.status.success;
+      default: return Colors.text.secondary;
     }
   };
 
@@ -354,6 +356,16 @@ export default function OrderDetailsScreen() {
   };
 
   const nextStatus = getNextStatus(order.status);
+
+  const getStatusGradient = (status: Order['status']) => {
+    switch (status) {
+      case 'created': return ['#FF6B6B', '#EE5253'];
+      case 'preparing': return ['#FF9F43', '#F368E0'];
+      case 'ready': return ['#54A0FF', '#2E86DE'];
+      case 'completed': return ['#1DD1A1', '#10AC84'];
+      default: return ['#C8D6E5', '#8395A7'];
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -369,17 +381,17 @@ export default function OrderDetailsScreen() {
             }}
             style={styles.backButton}
           >
-            <ArrowLeft size={24} color="#3B82F6" />
+            <ArrowLeft size={24} color={Colors.text.primary} />
           </TouchableOpacity>
 
-          <Text style={styles.title}>Order Details</Text>
+          <Text style={styles.title}>Order #{order.id.slice(-8)}</Text>
 
           {!editingOrder && order && order.status !== 'cancelled' && order.status !== 'completed' ? (
             <TouchableOpacity onPress={() => setEditingOrder(true)} style={styles.editButton}>
-              <Edit2 size={20} color="#3B82F6" />
+              <Edit2 size={20} color={Colors.text.primary} />
             </TouchableOpacity>
           ) : (
-            <View style={{ width: 24 }} /> /* Spacer to balance the header */
+            <View style={{ width: 40 }} />
           )}
         </View>
       </View>
@@ -387,20 +399,24 @@ export default function OrderDetailsScreen() {
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={[styles.scrollContent, isDesktop && styles.scrollContentDesktop]}
+        showsVerticalScrollIndicator={false}
       >
         <View style={isDesktop ? styles.desktopGrid : undefined}>
-          {/* LEFT COLUMN (Main Info) */}
+
+          {/* LEFT COLUMN */}
           <View style={isDesktop ? styles.leftColumn : undefined}>
+
+            {/* MAIN ORDER CARD */}
             <View style={styles.orderCard}>
               <View style={styles.orderHeader}>
-                <Text style={styles.orderNumber}>Order #{order.id.slice(-8)}</Text>
+                {/* Redundant Order Number removed */}
                 <View style={[styles.statusBadge, { backgroundColor: getStatusColor(order.status) }]}>
-                  <Text style={styles.statusText}>{order.status.toUpperCase()}</Text>
+                  <Text style={styles.statusText}>{order.status}</Text>
                 </View>
               </View>
 
               {editingOrder ? (
-                <View style={{ gap: 12 }}>
+                <View style={{ gap: 16 }}>
                   <Input
                     label="Description"
                     value={editForm.description}
@@ -408,7 +424,7 @@ export default function OrderDetailsScreen() {
                     multiline
                   />
                   <Input
-                    label="Price / Total ($)"
+                    label="Price ($)"
                     value={editForm.price}
                     onChangeText={(t) => setEditForm(prev => ({ ...prev, price: t }))}
                     keyboardType="decimal-pad"
@@ -420,36 +436,27 @@ export default function OrderDetailsScreen() {
                   />
                   <View style={{ flexDirection: 'row', gap: 12, marginTop: 8 }}>
                     <Button title="Cancel" onPress={() => setEditingOrder(false)} variant="outline" style={{ flex: 1 }} />
-                    <Button title="Save Changes" onPress={handleSaveEdit} style={{ flex: 1 }} disabled={updating} />
+                    <Button title="Save" onPress={handleSaveEdit} style={{ flex: 1 }} disabled={updating} />
                   </View>
                 </View>
               ) : (
                 <>
                   <View style={styles.customerSection}>
-                    <Text style={styles.sectionTitle}>Customer Information</Text>
-
-                    <TouchableOpacity onPress={() => setShowStats(true)}>
-                      <View style={[styles.infoRow, { marginBottom: 4 }]}>
-                        <Text style={[styles.customerName, { textDecorationLine: 'underline', color: '#111827' }]}>
-                          {order.customer_name}
-                        </Text>
-                        <Text style={{ fontSize: 12, color: '#3B82F6', marginLeft: 8 }}>(View Stats)</Text>
-                      </View>
-                    </TouchableOpacity>
-
+                    <Text style={styles.sectionTitle}>Customer Details</Text>
+                    <Text style={styles.customerName}>{order.customer_name}</Text>
                     <View style={styles.infoRow}>
-                      <Phone size={16} color="#6B7280" />
+                      <Phone size={15} color={Colors.text.secondary} />
                       <Text style={styles.infoText}>{order.customer_phone}</Text>
                     </View>
                     {order.address && (
                       <View style={styles.infoRow}>
-                        <MapPin size={16} color="#6B7280" />
+                        <MapPin size={15} color={Colors.text.secondary} />
                         <Text style={styles.infoText}>{order.address}</Text>
                       </View>
                     )}
                   </View>
 
-                  <Text style={styles.sectionTitle}>Order Details</Text>
+                  <Text style={styles.sectionTitle}>Order Items</Text>
                   <Text style={styles.description}>{order.description}</Text>
 
                   <View style={styles.priceBreakdown}>
@@ -467,12 +474,12 @@ export default function OrderDetailsScreen() {
                     )}
                     {order.delivery_fee !== undefined && order.delivery_fee > 0 && (
                       <View style={styles.priceRow}>
-                        <Text style={styles.priceLabel}>Delivery Fee</Text>
+                        <Text style={styles.priceLabel}>Delivery</Text>
                         <Text style={styles.priceValue}>${order.delivery_fee?.toFixed(2)}</Text>
                       </View>
                     )}
                     <View style={styles.totalRow}>
-                      <Text style={styles.totalLabel}>Total</Text>
+                      <Text style={styles.totalLabel}>Total Amount</Text>
                       <Text style={styles.totalValue}>${order.total?.toFixed(2) || order.price.toFixed(2)}</Text>
                     </View>
                   </View>
@@ -480,194 +487,233 @@ export default function OrderDetailsScreen() {
               )}
             </View>
 
-            {/* Activity Feed in Left Column on Desktop */}
+            {/* ATTACHMENTS */}
             <View style={styles.sectionCard}>
-              <Text style={[styles.sectionTitle, { marginBottom: 16 }]}>Order Activity</Text>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                <Text style={[styles.sectionTitle, { marginBottom: 0 }]}>Attachments</Text>
+                <TouchableOpacity onPress={handleAddPhoto}>
+                  <Text style={{ color: Colors.primary, fontWeight: '600' }}>+ Add Photo</Text>
+                </TouchableOpacity>
+              </View>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 12 }}>
+                {(!order.attachments || order.attachments.length === 0) ? (
+                  <Text style={{ color: Colors.text.secondary, fontStyle: 'italic' }}>No photos attached.</Text>
+                ) : (
+                  order.attachments.map((url, index) => (
+                    <TouchableOpacity key={index} onPress={() => setSelectedImage(url)}>
+                      <Image source={{ uri: url }} style={styles.attachmentThumb} />
+                    </TouchableOpacity>
+                  ))
+                )}
+              </ScrollView>
+            </View>
+
+          </View>
+
+          {/* RIGHT COLUMN */}
+          <View style={isDesktop ? styles.rightColumn : undefined}>
+
+            {/* ACTION CENTER */}
+            {nextStatus && order.status !== 'cancelled' && order.status !== 'completed' && (
+              <View style={styles.actionsContainer}>
+                {showUndo && (
+                  <View style={styles.undoContainer}>
+                    <AlertTriangle size={14} color={Colors.status.error} />
+                    <TouchableOpacity onPress={handleUndo}>
+                      <Text style={styles.undoText}>Undo limit change</Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
+                <Button
+                  title={`Mark as ${nextStatus.toUpperCase()}`}
+                  onPress={() => updateOrderStatus(nextStatus)}
+                  disabled={updating}
+                  style={[styles.actionButton, { backgroundColor: getStatusColor(nextStatus), borderColor: getStatusColor(nextStatus) }]}
+                />
+              </View>
+            )}
+
+            {/* DELIVERY INFO */}
+            {order.delivery_required && (
+              <View style={styles.sectionCard}>
+                <Text style={styles.sectionTitle}>Delivery Status</Text>
+                {delivery ? (
+                  <View style={{ backgroundColor: '#F9FAFB', padding: 16, borderRadius: 12 }}>
+                    <View style={[styles.infoRow, { marginBottom: 4 }]}>
+                      <Truck size={16} color={Colors.primary} />
+                      <Text style={{ fontWeight: '700', color: Colors.primary, fontSize: 16, textTransform: 'capitalize' }}>{delivery.status}</Text>
+                    </View>
+                    <View style={styles.infoRow}>
+                      <Clock size={14} color={Colors.text.secondary} />
+                      <Text style={styles.infoText}>Pickup: {new Date(delivery.pickup_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</Text>
+                    </View>
+                  </View>
+                ) : (
+                  <Button
+                    title="Request Driver"
+                    onPress={requestDelivery}
+                    disabled={updating}
+                    variant="outline"
+                    style={styles.deliveryButton}
+                  />
+                )}
+              </View>
+            )}
+
+            {/* INTERNAL NOTES */}
+            <View style={styles.sectionCard}>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                <Text style={[styles.sectionTitle, { marginBottom: 0 }]}>Internal Notes</Text>
+                <TouchableOpacity onPress={() => {
+                  setNoteText(order.notes || '');
+                  setEditingNote(true);
+                }}>
+                  <Text style={{ color: Colors.primary, fontWeight: '600', fontSize: 13 }}>{editingNote ? '' : 'Edit'}</Text>
+                </TouchableOpacity>
+              </View>
+
+              {editingNote ? (
+                <View style={{ gap: 10 }}>
+                  <Input value={noteText} onChangeText={setNoteText} multiline numberOfLines={3} placeholder="Add a private note..." />
+                  <View style={{ flexDirection: 'row', justifyContent: 'flex-end', gap: 10 }}>
+                    <Button title="Cancel" size="small" variant="ghost" onPress={() => setEditingNote(false)} />
+                    <Button title="Save" size="small" onPress={saveNote} />
+                  </View>
+                </View>
+              ) : (
+                <Text style={{ fontSize: 15, color: Colors.text.primary, lineHeight: 22 }}>{order.notes || 'No notes added.'}</Text>
+              )}
+            </View>
+
+            {/* TIMELINE */}
+            <View style={styles.sectionCard}>
+              <Text style={styles.sectionTitle}>Activity Timeline</Text>
               <View style={styles.timelineContainer}>
                 {activityLog.map((activity, index) => (
                   <View key={activity.id} style={styles.timelineItem}>
-                    {index !== activityLog.length - 1 && (
-                      <View style={styles.timelineConnector} />
-                    )}
-
-                    <View style={[styles.timelineDot, { backgroundColor: activity.action === 'cancellation' ? '#EF4444' : '#3B82F6' }]} />
+                    <View style={styles.timelineConnector} />
+                    <View style={[styles.timelineDot, {
+                      borderColor: activity.action === 'cancellation' ? Colors.status.error : Colors.primary,
+                      backgroundColor: '#FFF'
+                    }]} />
                     <View style={styles.timelineContent}>
                       <Text style={styles.timelineTitle}>
-                        {activity.action === 'status_change' ? 'Status Change' :
-                          activity.action === 'cancellation' ? 'Cancelled' :
-                            activity.action === 'edit' ? 'Order Edited' :
-                              activity.action.charAt(0).toUpperCase() + activity.action.slice(1)}
+                        {activity.action === 'status_change' ? 'Status Update' :
+                          activity.action === 'cancellation' ? 'Order Cancelled' :
+                            activity.action === 'edit' ? 'Order Edited' : 'Update'}
                       </Text>
-                      {activity.details?.reason && (
-                        <Text style={{ color: '#EF4444', fontSize: 13, marginBottom: 2 }}>Reason: {activity.details.reason}</Text>
-                      )}
                       <Text style={styles.timelineTime}>
-                        {new Date(activity.created_at).toLocaleString()}
+                        {new Date(activity.created_at).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                       </Text>
                     </View>
                   </View>
                 ))}
+
+                {/* Fallback Initial State */}
                 {activityLog.length === 0 && (
                   <View style={styles.timelineItem}>
-                    <View style={[styles.timelineDot, { backgroundColor: '#10B981' }]} />
+                    <View style={[styles.timelineDot, { borderColor: Colors.status.success, backgroundColor: '#FFF' }]} />
                     <View style={styles.timelineContent}>
                       <Text style={styles.timelineTitle}>Order Created</Text>
-                      <Text style={styles.timelineTime}>
-                        {new Date(order.created_at).toLocaleString()}
-                      </Text>
+                      <Text style={styles.timelineTime}>{new Date(order.created_at).toLocaleString()}</Text>
                     </View>
                   </View>
                 )}
               </View>
-            </View>
-          </View>
-
-          {/* RIGHT COLUMN (Actions, Notes, Delivery, Attachments) */}
-          <View style={isDesktop ? styles.rightColumn : undefined}>
-
-            {/* Main Action Buttons (Desktop top right) */}
-            {nextStatus && order.status !== 'cancelled' && order.status !== 'completed' && (
-              <View style={styles.actionsContainer}>
-                {showUndo && (
-                  <TouchableOpacity style={styles.undoContainer} onPress={handleUndo}>
-                    <Text style={{ color: '#6B7280' }}>Mistake?</Text>
-                    <Text style={styles.undoText}>Undo Change</Text>
-                  </TouchableOpacity>
-                )}
-
-                <Button
-                  title={`Mark as ${nextStatus.charAt(0).toUpperCase() + nextStatus.slice(1)}`}
-                  onPress={() => updateOrderStatus(nextStatus)}
-                  disabled={updating}
-                  style={[
-                    styles.actionButton,
-                    { backgroundColor: getStatusColor(nextStatus) }
-                  ]}
-                />
-              </View>
-            )}
-
-            <View style={styles.sectionCard}>
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                <Text style={styles.sectionTitle}>Internal Notes</Text>
-                {!editingNote && (
-                  <TouchableOpacity onPress={() => {
-                    setNoteText(order.notes || '');
-                    setEditingNote(true);
-                  }}>
-                    <Text style={{ color: '#3B82F6', fontWeight: '600' }}>{order.notes ? 'Edit' : 'Add'}</Text>
-                  </TouchableOpacity>
-                )}
-              </View>
-
-              {editingNote ? (
-                <View style={{ gap: 8 }}>
-                  <Input
-                    value={noteText}
-                    onChangeText={setNoteText}
-                    placeholder="Add private notes about this order..."
-                    multiline
-                    numberOfLines={3}
-                  />
-                  <View style={{ flexDirection: 'row', gap: 8, justifyContent: 'flex-end' }}>
-                    <Button title="Cancel" variant="outline" size="small" onPress={() => setEditingNote(false)} />
-                    <Button title="Save" size="small" onPress={saveNote} disabled={updating} />
-                  </View>
-                </View>
-              ) : (
-                <Text style={{ color: order.notes ? '#111827' : '#9CA3AF', fontStyle: order.notes ? 'normal' : 'italic', lineHeight: 20 }}>
-                  {order.notes || 'No internal notes.'}
-                </Text>
-              )}
-            </View>
-
-            {order.delivery_required && (
-              <View style={styles.sectionCard}>
-                <Text style={styles.sectionTitle}>Delivery Information</Text>
-                {delivery ? (
-                  <View>
-                    <View style={styles.infoRow}>
-                      <Truck size={16} color="#3B82F6" />
-                      <Text style={styles.infoText}>Status: {delivery.status}</Text>
-                    </View>
-                    <View style={styles.infoRow}>
-                      <Clock size={16} color="#6B7280" />
-                      <Text style={styles.infoText}>
-                        Pickup Time: {new Date(delivery.pickup_time).toLocaleTimeString()}
-                      </Text>
-                    </View>
-                    <View style={styles.infoRow}>
-                      <Text style={styles.infoText}>Fee: ${delivery.fee.toFixed(2)}</Text>
-                    </View>
-                  </View>
-                ) : (
-                  <View>
-                    <Text style={styles.infoText}>Delivery not yet requested</Text>
-                    <Button
-                      title="Request Delivery"
-                      onPress={requestDelivery}
-                      disabled={updating}
-                      style={styles.deliveryButton}
-                    />
-                  </View>
-                )}
-              </View>
-            )}
-
-            <View style={styles.sectionCard}>
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                <Text style={styles.sectionTitle}>Attachments</Text>
-                <TouchableOpacity onPress={handleAddPhoto} disabled={updating} style={{ padding: 4 }}>
-                  <Camera size={20} color="#3B82F6" />
-                </TouchableOpacity>
-              </View>
-
-              {(!order.attachments || order.attachments.length === 0) ? (
-                <Text style={{ color: '#9CA3AF', fontStyle: 'italic', fontSize: 14 }}>No photos added.</Text>
-              ) : (
-                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>
-                  {order.attachments.map((url, index) => (
-                    <TouchableOpacity key={index} onPress={() => setSelectedImage(url)}>
-                      <Image source={{ uri: url }} style={styles.attachmentThumb} />
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              )}
             </View>
 
             {order.status !== 'cancelled' && order.status !== 'completed' && (
-              <View style={{ padding: 20, paddingTop: 0 }}>
-                <Button
-                  title="Cancel Order"
-                  variant="outline"
-                  onPress={handleCancelOrder}
-                  style={{ borderColor: '#EF4444' }}
-                  textStyle={{ color: '#EF4444' }}
-                />
+              <View style={{ alignItems: 'center', marginTop: 10 }}>
+                <TouchableOpacity onPress={handleCancelOrder} style={{ padding: 12 }}>
+                  <Text style={{ color: '#EF4444', fontWeight: '600' }}>Cancel Order</Text>
+                </TouchableOpacity>
               </View>
             )}
+
+            <View style={{ height: 40 }} />
           </View>
         </View>
       </ScrollView>
+
+      {/* MODALS */}
+      <Modal visible={!!selectedImage} transparent={true} animationType="fade" onRequestClose={() => setSelectedImage(null)}>
+        <View style={styles.modalOverlay}>
+          <TouchableOpacity style={styles.closeButton} onPress={() => setSelectedImage(null)}>
+            <X size={24} color="#FFF" />
+          </TouchableOpacity>
+          <Image source={{ uri: selectedImage || '' }} style={styles.fullImage} resizeMode="contain" />
+          <View style={styles.modalActions}>
+            <TouchableOpacity onPress={() => selectedImage && handleDeletePhoto(selectedImage)} style={{ padding: 16, backgroundColor: 'rgba(255,59,48,0.2)', borderRadius: 100 }}>
+              <Trash2 size={24} color="#FF3B30" />
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      <CustomerStatsModal
+        visible={showStats}
+        onClose={() => setShowStats(false)}
+        customerPhone={order.customer_phone}
+        customerName={order.customer_name}
+        businessId={business?.id || ''}
+      />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#F9FAFB',
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingTop: Platform.OS === 'ios' ? 60 : 40,
+    paddingBottom: 20,
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#F3F4F6',
+    zIndex: 10,
+  },
   headerContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
     width: '100%',
-    maxWidth: 800,
+    maxWidth: 1200,
     alignSelf: 'center',
+    justifyContent: 'space-between',
+  },
+  backButton: {
+    padding: 8,
+    borderRadius: 12,
+    backgroundColor: '#F3F4F6',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  editButton: {
+    padding: 8,
+    borderRadius: 12,
+    backgroundColor: '#F3F4F6',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  title: {
+    fontSize: 17,
+    fontWeight: '700',
+    color: '#111827',
   },
   scrollView: {
     flex: 1,
-    width: '100%',
   },
   scrollContent: {
     width: '100%',
     maxWidth: 800,
     alignSelf: 'center',
-    paddingBottom: 40,
+    paddingVertical: 20,
+    paddingBottom: 80,
   },
   scrollContentDesktop: {
     maxWidth: 1200,
@@ -684,220 +730,243 @@ const styles = StyleSheet.create({
   rightColumn: {
     flex: 1,
   },
-  container: {
-    flex: 1,
-    backgroundColor: '#F9FAFB',
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 20,
-    paddingTop: 60,
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
-  },
-  backButton: {
-    padding: 4,
-  },
-  editButton: {
-    padding: 4,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#111827',
-  },
+  /* Cards */
   orderCard: {
-    margin: 20,
+    marginHorizontal: 16,
+    marginBottom: 16,
     backgroundColor: '#FFFFFF',
-    borderRadius: 12,
+    borderRadius: 20,
+    padding: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 12,
+    elevation: 2,
+    borderWidth: 1,
+    borderColor: '#F3F4F6',
+  },
+  sectionCard: {
+    marginHorizontal: 16,
+    marginBottom: 16,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
     padding: 20,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 2,
+    borderWidth: 1,
+    borderColor: '#F3F4F6',
   },
+  /* Typography & Sections */
   orderHeader: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-end', // Only status badge
     alignItems: 'center',
     marginBottom: 20,
   },
   orderNumber: {
-    fontSize: 18,
-    fontWeight: '600',
+    fontSize: 22,
+    fontWeight: '800',
     color: '#111827',
+    display: 'none', // Hidden as duplicates header
   },
   statusBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 100,
   },
   statusText: {
     color: '#FFFFFF',
     fontSize: 12,
-    fontWeight: '600',
-  },
-  customerSection: {
-    marginBottom: 20,
-  },
-  sectionCard: {
-    marginHorizontal: 20,
-    marginBottom: 20,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    padding: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 2,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   sectionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#111827',
-    marginBottom: 12,
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#6B7280', // Softer gray
+    marginBottom: 16,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+  /* Customer Info */
+  customerSection: {
+    marginBottom: 28,
   },
   customerName: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: '700',
     color: '#111827',
-    marginBottom: 8,
+    marginBottom: 6,
   },
   infoRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 6,
     gap: 8,
   },
   infoText: {
-    fontSize: 14,
-    color: '#6B7280',
+    fontSize: 15,
+    color: '#4B5563',
+    fontWeight: '500',
   },
-  // Removed orderSection style
+  /* Order Description & Price */
   description: {
     fontSize: 16,
-    color: '#4B5563',
-    marginBottom: 12,
+    color: '#1F2937',
+    marginBottom: 24,
     lineHeight: 24,
+    // Removed background box for cleaner look
+    paddingHorizontal: 4,
   },
   priceBreakdown: {
-    backgroundColor: '#F3F4F6',
-    padding: 12,
-    borderRadius: 8,
-    gap: 4,
+    backgroundColor: '#F9FAFB',
+    padding: 20,
+    borderRadius: 16,
+    gap: 12,
   },
   priceRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'center',
   },
   priceLabel: {
-    fontSize: 14,
+    fontSize: 15,
     color: '#6B7280',
+    fontWeight: '500',
   },
   priceValue: {
-    fontSize: 14,
+    fontSize: 15,
     color: '#111827',
+    fontWeight: '600',
   },
   totalRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 8,
+    alignItems: 'center',
+    marginTop: 16,
+    paddingTop: 16,
     borderTopWidth: 1,
-    borderTopColor: '#D1D5DB',
-    paddingTop: 8,
+    borderTopColor: '#E5E7EB',
   },
   totalLabel: {
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: '800',
     color: '#111827',
   },
   totalValue: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#059669',
+    fontSize: 22,
+    fontWeight: '800',
+    color: Colors.primary,
   },
-  undoContainer: {
-    marginBottom: 12,
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 8,
-  },
-  undoText: {
-    color: '#EF4444',
-    fontWeight: '600',
-    textDecorationLine: 'underline',
-  },
+  /* Timeline */
   timelineContainer: {
-    paddingLeft: 4,
+    paddingLeft: 8,
+    paddingVertical: 8,
   },
   timelineItem: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    marginBottom: 24,
+    marginBottom: 28,
     position: 'relative',
   },
   timelineDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    marginTop: 4,
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    marginTop: 3,
     marginRight: 16,
     zIndex: 2,
+    borderWidth: 3,
+    borderColor: '#FFFFFF',
+    // Shadow for dot
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
   },
   timelineConnector: {
     position: 'absolute',
-    left: 5, // Center of dot (12/2 - 2/2 = 5)
-    top: 16,
-    bottom: -24, // Connect to next item
+    left: 6,
+    top: 18,
+    bottom: -32,
     width: 2,
     backgroundColor: '#E5E7EB',
     zIndex: 1,
+    borderRadius: 1,
   },
   timelineContent: {
     flex: 1,
   },
   timelineTitle: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '600',
     color: '#111827',
-    marginBottom: 2,
+    marginBottom: 4,
   },
   timelineTime: {
-    fontSize: 12,
+    fontSize: 13,
     color: '#9CA3AF',
+    fontWeight: '500',
   },
-  deliveryButton: {
-    marginTop: 8,
-  },
+  /* Actions */
   actionsContainer: {
-    padding: 20,
+    paddingHorizontal: 16,
+    marginBottom: 24,
+    alignItems: 'center',
+    gap: 16,
   },
   actionButton: {
     width: '100%',
+    backgroundColor: Colors.primary,
+    borderRadius: 16,
+    paddingVertical: 16,
+    shadowColor: Colors.primary,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.25,
+    shadowRadius: 16,
+    elevation: 8,
   },
+  undoContainer: {
+    marginBottom: 8,
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: '#FEF2F2',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 100,
+  },
+  undoText: {
+    color: Colors.status.error,
+    fontWeight: '600',
+    fontSize: 14,
+  },
+  deliveryButton: {
+    marginTop: 12,
+  },
+  /* Attachments */
+  attachmentThumb: {
+    width: 90,
+    height: 90,
+    borderRadius: 16,
+    backgroundColor: '#F3F4F6',
+  },
+  /* Errors & Modals */
   errorText: {
     fontSize: 16,
-    color: '#EF4444',
+    color: Colors.status.error,
     textAlign: 'center',
     marginTop: 40,
   },
-  attachmentThumb: {
-    width: 80,
-    height: 80,
-    borderRadius: 8,
-    backgroundColor: '#F3F4F6',
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-  },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.9)',
+    backgroundColor: 'rgba(0,0,0,0.95)',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -913,16 +982,16 @@ const styles = StyleSheet.create({
   },
   closeButton: {
     position: 'absolute',
-    top: 50,
+    top: 60,
     right: 20,
     zIndex: 10,
-    padding: 8,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    borderRadius: 20,
+    padding: 12,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderRadius: 100,
   },
   modalActions: {
     position: 'absolute',
-    bottom: 40,
+    bottom: 50,
     width: '100%',
     paddingHorizontal: 20,
     alignItems: 'center',

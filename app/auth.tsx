@@ -25,9 +25,14 @@ export default function AuthScreen() {
     confirmPassword: '',
   });
 
-  // Clear error when switching tabs
+  // Clear error and reset form when switching tabs
   useEffect(() => {
     setError(null);
+    setFormData({
+      email: '',
+      password: '',
+      confirmPassword: '',
+    });
   }, [activeTab]);
 
   const handleSubmit = async () => {
