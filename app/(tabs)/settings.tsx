@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, FlatList, Alert, Platform, Share } from 'react-native';
+import { View, Text, StyleSheet, FlatList, Alert, Platform, Share, TouchableOpacity } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
 import { useAuth } from '@/contexts/AuthContext';
 import { useBusiness } from '@/contexts/BusinessContext';
@@ -316,6 +316,17 @@ Once you sign up with ${email}, you'll automatically have access to ${business?.
 
         <AccountSecuritySection />
 
+        {/* Logout Section */}
+        <View style={styles.logoutSection}>
+          <TouchableOpacity style={styles.logoutButton} onPress={handleSignOut}>
+            <LogOut size={20} color={Colors.status.error} />
+            <Text style={styles.logoutText}>Sign Out</Text>
+          </TouchableOpacity>
+          <Text style={styles.logoutSubtext}>
+            You're signed in as {user?.email}
+          </Text>
+        </View>
+
         {/* Spacer for bottom tab bar */}
         <View style={{ height: 40 }} />
       </View>
@@ -325,10 +336,10 @@ Once you sign up with ${email}, you'll automatically have access to ${business?.
 
 const styles = StyleSheet.create({
   header: {
-    marginBottom: Layout.spacing.lg,
+    marginBottom: Layout.spacing.xl,
   },
   title: {
-    fontSize: 28,
+    fontSize: 32,
     fontWeight: '800',
     color: Colors.text.primary,
     marginBottom: 4,
@@ -340,5 +351,33 @@ const styles = StyleSheet.create({
   },
   content: {
     gap: Layout.spacing.lg,
+  },
+  logoutSection: {
+    marginTop: Layout.spacing.md,
+    paddingVertical: Layout.spacing.lg,
+    borderTopWidth: 1,
+    borderTopColor: Colors.border,
+    alignItems: 'center',
+    gap: Layout.spacing.sm,
+  },
+  logoutButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Layout.spacing.sm,
+    paddingVertical: Layout.spacing.md,
+    paddingHorizontal: Layout.spacing.xl,
+    backgroundColor: Colors.surface,
+    borderRadius: Layout.borderRadius.lg,
+    borderWidth: 1,
+    borderColor: Colors.status.error,
+  },
+  logoutText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: Colors.status.error,
+  },
+  logoutSubtext: {
+    fontSize: 13,
+    color: Colors.text.placeholder,
   },
 });
