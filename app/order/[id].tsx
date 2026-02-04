@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Alert, TouchableOpacity, Modal, Image, Platform, useWindowDimensions } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { ordersApi, deliveryApi, activityApi, storageApi } from '@/lib/api';
+import { supabase } from '@/lib/supabase';
 import { Order, Delivery, OrderActivity } from '@/types';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { Button } from '@/components/Button';
@@ -343,6 +344,36 @@ export default function OrderDetailsScreen() {
 
   useEffect(() => {
     loadOrderDetails();
+  }, [id]);
+
+  // Real-time subscription for this specific order
+  useEffect(() => {
+    if (!id) return;
+
+    console.log(`Setting up real-time subscription for order ${id}`);
+
+    const channel = supabase
+      .channel(`order-${id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*', // Listen to all events (UPDATE, DELETE)
+          schema: 'public',
+          table: 'orders',
+          filter: `id=eq.${id}`
+        },
+        (payload) => {
+          console.log('Order detail change detected:', payload);
+          // Reload order details when this specific order changes
+          loadOrderDetails();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      console.log(`Cleaning up real-time subscription for order ${id}`);
+      supabase.removeChannel(channel);
+    };
   }, [id]);
 
   if (loading) {

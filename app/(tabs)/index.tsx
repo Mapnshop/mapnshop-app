@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, StyleSheet, FlatList, RefreshControl, TextInput, TouchableOpacity, Platform, useWindowDimensions } from 'react-native';
 import { useBusiness } from '@/contexts/BusinessContext';
 import { ordersApi } from '@/lib/api';
+import { supabase } from '@/lib/supabase';
 import { Order } from '@/types';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { OrderCard } from '@/components/OrderCard';
@@ -98,6 +99,36 @@ export default function InboxScreen() {
       loadOrders(0, true);
     }, [business]) // Refresh on focus, but maybe just page 0?
   );
+
+  // Real-time subscription for order changes
+  useEffect(() => {
+    if (!business) return;
+
+    console.log('Setting up real-time subscription for orders');
+
+    const channel = supabase
+      .channel('orders-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*', // Listen to all events (INSERT, UPDATE, DELETE)
+          schema: 'public',
+          table: 'orders',
+          filter: `business_id=eq.${business.id}`
+        },
+        (payload) => {
+          console.log('Order change detected:', payload);
+          // Refresh the list when any order changes
+          loadOrders(0, true);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      console.log('Cleaning up real-time subscription');
+      supabase.removeChannel(channel);
+    };
+  }, [business?.id, activeFilter, searchQuery]);
 
   // Client-side filtering is no longer primary if we server-search, 
   // but for smoothing UX we can keep it if needed. 

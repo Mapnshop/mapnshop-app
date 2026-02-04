@@ -25,7 +25,7 @@ export default function TabLayout() {
               paddingTop: Layout.spacing.sm,
               paddingBottom: Platform.OS === 'ios' ? Layout.spacing.lg : Layout.spacing.sm,
               height: Platform.OS === 'ios' ? 88 : 64,
-              elevation: 0, // Flat style for Android
+              elevation: , // Flat style for Android
               shadowOpacity: 0, // Flat style for iOS
             },
             tabBarActiveTintColor: Colors.primary,
