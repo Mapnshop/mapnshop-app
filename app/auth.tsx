@@ -102,7 +102,7 @@ export default function AuthScreen() {
     <ScreenContainer scrollable>
       <View style={styles.header}>
         <Image
-          source={require('@/assets/images/mapnshop\'s_logo.png')}
+          source={require('@/assets/images/mapnshop_logo.png')}
           style={styles.logo}
           resizeMode="contain"
         />
