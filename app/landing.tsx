@@ -48,7 +48,7 @@ export default function LandingPage() {
         <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
             {/* Hero Section with Gradient */}
             <LinearGradient
-                colors={['#3B82F6', '#2563EB', '#1D4ED8']}
+                colors={['#3B82F6', '#2563EB', '#1D4ED8'] as const}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
                 style={[styles.hero, isDesktop && styles.heroDesktop]}
@@ -56,7 +56,7 @@ export default function LandingPage() {
                 <View style={[styles.heroContent, isDesktop && styles.heroContentDesktop]}>
                     {/* Logo */}
                     <Image
-                        source={require('@/assets/images/logo.png')}
+                        source={require('@/assets/images/mapnshops_logo.png')}
                         style={styles.logo}
                         resizeMode="contain"
                     />
@@ -101,7 +101,7 @@ export default function LandingPage() {
                     {features.map((feature, index) => (
                         <View key={index} style={[styles.featureCard, isDesktop && styles.featureCardDesktop]}>
                             <LinearGradient
-                                colors={feature.gradient}
+                                colors={feature.gradient as any}
                                 start={{ x: 0, y: 0 }}
                                 end={{ x: 1, y: 1 }}
                                 style={styles.featureIconContainer}
@@ -117,7 +117,7 @@ export default function LandingPage() {
 
             {/* Stats Section */}
             <LinearGradient
-                colors={['#F9FAFB', '#F3F4F6']}
+                colors={['#F9FAFB', '#F3F4F6'] as const}
                 style={styles.statsSection}
             >
                 <View style={[styles.statsGrid, isDesktop && styles.statsGridDesktop]}>
@@ -138,7 +138,7 @@ export default function LandingPage() {
 
             {/* CTA Section */}
             <LinearGradient
-                colors={['#3B82F6', '#2563EB']}
+                colors={['#3B82F6', '#2563EB'] as const}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
                 style={styles.ctaSection}
