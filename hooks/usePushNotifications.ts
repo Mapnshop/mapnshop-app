@@ -82,6 +82,12 @@ export function usePushNotifications() {
     const router = useRouter();
 
     useEffect(() => {
+        // Skip entirely if in Expo Go to avoid SDK 53+ errors
+        if (isExpoGo) {
+            console.log('Skipping Push Notification setup in Expo Go');
+            return;
+        }
+
         registerForPushNotificationsAsync().then(token => setExpoPushToken(token));
 
         notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
@@ -109,6 +115,9 @@ export function usePushNotifications() {
 
     // Sync Token to Supabase
     useEffect(() => {
+        // Skip if in Expo Go
+        if (isExpoGo) return;
+
         if (user && expoPushToken) {
             const saveToken = async () => {
                 // 1. Save Token
