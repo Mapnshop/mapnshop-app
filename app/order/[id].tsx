@@ -183,34 +183,55 @@ export default function OrderDetailsScreen() {
   };
 
   const handleCancelOrder = async () => {
-    Alert.prompt(
-      "Cancel Order",
-      "Please enter a reason for cancellation:",
-      [
-        { text: "Keep Order", style: "cancel" },
-        {
-          text: "Cancel Order",
-          style: "destructive",
-          onPress: async (reason?: string) => {
-            if (!reason || !order) return;
-            setUpdating(true);
-            try {
-              await ordersApi.update(order.id, {
-                status: 'cancelled',
-                cancellation_reason: reason
-              });
-              await activityApi.logAction(order.id, 'cancellation', { reason });
-              await loadOrderDetails();
-            } catch (error) {
-              Alert.alert("Error", "Failed to cancel order");
-            } finally {
-              setUpdating(false);
+    if (!order) return;
+
+    const performCancellation = async (reason: string) => {
+      if (!reason.trim()) {
+        Alert.alert("Error", "Please provide a cancellation reason");
+        return;
+      }
+
+      setUpdating(true);
+      try {
+        await ordersApi.update(order.id, {
+          status: 'cancelled',
+          cancellation_reason: reason
+        });
+        await activityApi.logAction(order.id, 'cancellation', { reason });
+        await loadOrderDetails();
+      } catch (error) {
+        Alert.alert("Error", "Failed to cancel order");
+      } finally {
+        setUpdating(false);
+      }
+    };
+
+    if (Platform.OS === 'web') {
+      // Use native browser prompt for web
+      const reason = window.prompt("Cancel Order\n\nPlease enter a reason for cancellation:");
+      if (reason !== null) { // null means user clicked cancel
+        await performCancellation(reason);
+      }
+    } else {
+      // Use Alert.prompt for mobile
+      Alert.prompt(
+        "Cancel Order",
+        "Please enter a reason for cancellation:",
+        [
+          { text: "Keep Order", style: "cancel" },
+          {
+            text: "Cancel Order",
+            style: "destructive",
+            onPress: async (reason?: string) => {
+              if (reason) {
+                await performCancellation(reason);
+              }
             }
           }
-        }
-      ],
-      "plain-text"
-    );
+        ],
+        "plain-text"
+      );
+    }
   };
 
   const handleSaveEdit = async () => {
