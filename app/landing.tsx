@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform, useWindowDimensions, Image } from 'react-native';
 import { router } from 'expo-router';
 import { Inbox, CheckCircle, Eye, Calendar, Menu, X } from 'lucide-react-native';
@@ -11,6 +11,12 @@ export default function LandingPage() {
     const isDesktop = width >= 1024;
     const isMobile = width < 768;
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+    // Refs for scrolling
+    const scrollViewRef = useRef<ScrollView>(null);
+    const problemRef = useRef<View>(null);
+    const solutionRef = useRef<View>(null);
+    const featuresRef = useRef<View>(null);
 
     const problems = [
         'Orders arrive from too many places',
@@ -69,8 +75,22 @@ export default function LandingPage() {
     ];
 
     const scrollToSection = (sectionId: string) => {
-        // For web, you could implement smooth scrolling
         setMobileMenuOpen(false);
+
+        let ref: React.RefObject<View> | null = null;
+        if (sectionId === 'problem') ref = problemRef;
+        else if (sectionId === 'solution') ref = solutionRef;
+        else if (sectionId === 'features') ref = featuresRef;
+
+        if (ref?.current) {
+            ref.current.measureLayout(
+                scrollViewRef.current as any,
+                (x, y) => {
+                    scrollViewRef.current?.scrollTo({ y: y - 80, animated: true });
+                },
+                () => { }
+            );
+        }
     };
 
     return (
@@ -152,7 +172,7 @@ export default function LandingPage() {
                 )}
             </View>
 
-            <ScrollView showsVerticalScrollIndicator={false}>
+            <ScrollView ref={scrollViewRef} showsVerticalScrollIndicator={false}>
                 {/* Hero Section */}
                 <View style={[styles.hero, isDesktop && styles.heroDesktop]}>
                     <View style={[styles.heroContent, isDesktop && styles.heroContentDesktop]}>
@@ -190,7 +210,7 @@ export default function LandingPage() {
                 </View>
 
                 {/* Problem Section */}
-                <View style={styles.section}>
+                <View ref={problemRef} style={styles.section}>
                     <Text style={styles.sectionTitle}>
                         Local Businesses Don't Have a Sales Problem.{'\n'}They Have a Coordination Problem.
                     </Text>
@@ -210,7 +230,7 @@ export default function LandingPage() {
                 </View>
 
                 {/* Solution Section */}
-                <View style={[styles.section, styles.solutionSection]}>
+                <View ref={solutionRef} style={[styles.section, styles.solutionSection]}>
                     <Text style={styles.sectionTitle}>
                         Mapnshop Replaces Chaos With One Operational View
                     </Text>
@@ -247,7 +267,7 @@ export default function LandingPage() {
                 </View>
 
                 {/* Features */}
-                <View style={[styles.section, styles.featuresSection]}>
+                <View ref={featuresRef} style={[styles.section, styles.featuresSection]}>
                     <View style={[styles.featuresGrid, isDesktop && styles.featuresGridDesktop]}>
                         {features.map((feature, index) => (
                             <View key={index} style={[styles.featureCard, isDesktop && styles.featureCardDesktop]}>
