@@ -74,6 +74,11 @@ export default function LandingPage() {
         'Small food shops'
     ];
 
+    const onLayoutSection = (id: string, event: any) => {
+        // Only needed if we still want local scrolling for some reason, 
+        // but user requested separate pages. We keeping this just in case logic is reused or reverted.
+    };
+
     const scrollToSection = (sectionId: string) => {
         setMobileMenuOpen(false);
 
@@ -99,9 +104,9 @@ export default function LandingPage() {
             <View style={styles.nav}>
                 <View style={[styles.navContent, isDesktop && styles.navContentDesktop]}>
                     {/* Logo */}
-                    <TouchableOpacity style={styles.navLogo} onPress={() => { }}>
+                    <TouchableOpacity style={styles.navLogo} onPress={() => router.push('/landing')}>
                         <Image
-                            source={require('@/assets/images/logo.png')}
+                            source={require('@/assets/images/mapnshop_logo.png')}
                             style={styles.navLogoImage}
                             resizeMode="contain"
                         />
@@ -182,12 +187,16 @@ export default function LandingPage() {
                         </Text>
 
                         <Text style={[styles.heroSubtitle, isDesktop && styles.heroSubtitleDesktop]}>
-                            Orders from walk-ins, phone calls, WhatsApp, Instagram, and delivery apps — all in one place.
+                            Mapnshop is the internal system your team uses to know what to do next.
                         </Text>
 
-                        <Text style={styles.heroSupporting}>
-                            Mapnshop is the internal system your team uses to see what needs to be done right now.
-                        </Text>
+                        <View style={styles.heroImageContainer}>
+                            <Image
+                                source={require('@/assets/images/mapnshop_inbox_mockup.png')}
+                                style={styles.heroImage}
+                                resizeMode="contain"
+                            />
+                        </View>
 
                         <TouchableOpacity
                             style={styles.primaryButton}
@@ -199,6 +208,7 @@ export default function LandingPage() {
                         <Text style={styles.heroFootnote}>
                             Currently onboarding a small number of local businesses.
                         </Text>
+
                     </View>
                 </View>
 
@@ -206,6 +216,10 @@ export default function LandingPage() {
                 <View ref={problemRef} style={styles.section}>
                     <Text style={styles.sectionTitle}>
                         Local Businesses Don't Have a Sales Problem.{'\n'}They Have a Coordination Problem.
+                    </Text>
+
+                    <Text style={styles.sectionSubtitle}>
+                        When everything is urgent, nothing is clear.
                     </Text>
 
                     <View style={styles.problemList}>
@@ -229,10 +243,10 @@ export default function LandingPage() {
                     </Text>
 
                     <View style={styles.solutionPoints}>
-                        <Text style={styles.solutionPoint}>All orders live in one inbox</Text>
-                        <Text style={styles.solutionPoint}>Every order has a clear status</Text>
-                        <Text style={styles.solutionPoint}>Staff always know what's next</Text>
-                        <Text style={styles.solutionPoint}>Owners see the day clearly</Text>
+                        <Text style={styles.solutionPoint}>One inbox for every order</Text>
+                        <Text style={styles.solutionPoint}>Clear status for every task</Text>
+                        <Text style={styles.solutionPoint}>No guessing for staff</Text>
+                        <Text style={styles.solutionPoint}>Full visibility for owners</Text>
                     </View>
 
                     <View style={styles.principleBox}>
@@ -245,6 +259,10 @@ export default function LandingPage() {
                 {/* How It Works */}
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>How It Works</Text>
+
+                    <Text style={styles.sectionSubtitle}>
+                        No setup. No behavior change. Just clarity.
+                    </Text>
 
                     <View style={[styles.stepsContainer, isDesktop && styles.stepsContainerDesktop]}>
                         {steps.map((step, index) => (
@@ -261,6 +279,10 @@ export default function LandingPage() {
 
                 {/* Features */}
                 <View ref={featuresRef} style={[styles.section, styles.featuresSection]}>
+                    <Text style={styles.featuresDisclaimer}>
+                        Mapnshop doesn’t replace your POS. It sits above it to run daily operations.
+                    </Text>
+
                     <View style={[styles.featuresGrid, isDesktop && styles.featuresGridDesktop]}>
                         {features.map((feature, index) => (
                             <View key={index} style={[styles.featureCard, isDesktop && styles.featureCardDesktop]}>
@@ -287,7 +309,7 @@ export default function LandingPage() {
                     </View>
 
                     <Text style={styles.businessFootnote}>
-                        If orders matter to your day, Mapnshop is for you.
+                        If you’ve ever checked WhatsApp during a rush to make sure nothing was missed, this is for you.
                     </Text>
                 </View>
 
