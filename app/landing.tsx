@@ -13,10 +13,10 @@ export default function LandingPage() {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     // Refs for scrolling
-    const scrollViewRef = useRef<ScrollView>(null);
-    const problemRef = useRef<View>(null);
-    const solutionRef = useRef<View>(null);
-    const featuresRef = useRef<View>(null);
+    const scrollViewRef = useRef<any>(null);
+    const problemRef = useRef<any>(null);
+    const solutionRef = useRef<any>(null);
+    const featuresRef = useRef<any>(null);
 
     const problems = [
         'Orders arrive from too many places',

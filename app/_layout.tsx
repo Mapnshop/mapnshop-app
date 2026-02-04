@@ -23,6 +23,7 @@ function RootLayoutNav() {
     const inAuthGroup = segments[0] === 'auth';
     const inOnboarding = segments[0] === 'onboarding';
     const inLanding = segments[0] === 'landing';
+    const inSupport = segments[0] === 'support';
 
     console.log('RootLayoutNav check:', {
       user: !!user,
@@ -30,11 +31,12 @@ function RootLayoutNav() {
       segments: segments,
       inAuthGroup,
       inOnboarding,
-      inLanding
+      inLanding,
+      inSupport
     });
 
     // Show landing page for non-authenticated users (only on web)
-    if (!user && !inAuthGroup && !inLanding) {
+    if (!user && !inAuthGroup && !inLanding && !inSupport) {
       console.log('Redirecting to /landing');
       router.replace('/landing');
     } else if (user && !business && !inOnboarding) {
