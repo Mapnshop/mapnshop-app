@@ -22,22 +22,25 @@ function RootLayoutNav() {
 
     const inAuthGroup = segments[0] === 'auth';
     const inOnboarding = segments[0] === 'onboarding';
+    const inLanding = segments[0] === 'landing';
 
     console.log('RootLayoutNav check:', {
       user: !!user,
       business: !!business,
       segments: segments,
       inAuthGroup,
-      inOnboarding
+      inOnboarding,
+      inLanding
     });
 
-    if (!user && !inAuthGroup) {
-      console.log('Redirecting to /auth');
-      router.replace('/auth');
+    // Show landing page for non-authenticated users (only on web)
+    if (!user && !inAuthGroup && !inLanding) {
+      console.log('Redirecting to /landing');
+      router.replace('/landing');
     } else if (user && !business && !inOnboarding) {
       console.log('Redirecting to /onboarding');
       router.replace('/onboarding');
-    } else if (user && business && (inAuthGroup || inOnboarding || !segments[0])) {
+    } else if (user && business && (inAuthGroup || inOnboarding || inLanding || !segments[0])) {
       console.log('Redirecting to /(tabs)');
       router.replace('/(tabs)');
     }
@@ -55,6 +58,7 @@ function RootLayoutNav() {
     <>
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="index" />
+        <Stack.Screen name="landing" />
         <Stack.Screen name="auth" />
         <Stack.Screen name="onboarding" />
         <Stack.Screen name="(tabs)" />
