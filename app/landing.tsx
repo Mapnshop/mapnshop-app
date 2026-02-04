@@ -1,9 +1,10 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform, useWindowDimensions } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform, useWindowDimensions, Image } from 'react-native';
 import { router } from 'expo-router';
-import { Package, TrendingUp, Users, BarChart3, CheckCircle, ArrowRight } from 'lucide-react-native';
+import { Package, TrendingUp, Users, BarChart3, CheckCircle, ArrowRight, Zap, Shield, Clock } from 'lucide-react-native';
 import { Colors } from '@/constants/Colors';
 import { Layout } from '@/constants/Layout';
+import { LinearGradient } from 'expo-linear-gradient';
 
 export default function LandingPage() {
     const { width } = useWindowDimensions();
@@ -14,56 +15,83 @@ export default function LandingPage() {
         {
             icon: Package,
             title: 'Order Management',
-            description: 'Track and manage all your orders in one place with real-time updates.'
+            description: 'Track and manage all your orders in one place with real-time updates.',
+            gradient: ['#3B82F6', '#2563EB']
         },
         {
-            icon: TrendingUp,
-            title: 'Real-Time Tracking',
-            description: 'Monitor order status and delivery progress instantly across all devices.'
+            icon: Zap,
+            title: 'Real-Time Sync',
+            description: 'Instant synchronization across web and mobile. Changes reflect everywhere immediately.',
+            gradient: ['#8B5CF6', '#7C3AED']
         },
         {
             icon: Users,
             title: 'Customer Management',
-            description: 'Build lasting relationships with customer profiles and order history.'
+            description: 'Build lasting relationships with customer profiles and complete order history.',
+            gradient: ['#EC4899', '#DB2777']
         },
         {
             icon: BarChart3,
-            title: 'Analytics & Reports',
-            description: 'Make data-driven decisions with comprehensive business insights.'
+            title: 'Analytics & Insights',
+            description: 'Make data-driven decisions with comprehensive business analytics.',
+            gradient: ['#10B981', '#059669']
         }
     ];
 
-    const steps = [
-        { number: '1', title: 'Sign Up', description: 'Create your free account in seconds' },
-        { number: '2', title: 'Add Orders', description: 'Start managing your deliveries' },
-        { number: '3', title: 'Grow Business', description: 'Scale with powerful tools' }
+    const benefits = [
+        { icon: Clock, text: 'Save 10+ hours per week' },
+        { icon: Shield, text: '99.9% uptime guarantee' },
+        { icon: Zap, text: 'Lightning-fast performance' },
     ];
 
     return (
         <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-            {/* Hero Section */}
-            <View style={[styles.hero, isDesktop && styles.heroDesktop]}>
+            {/* Hero Section with Gradient */}
+            <LinearGradient
+                colors={['#3B82F6', '#2563EB', '#1D4ED8']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={[styles.hero, isDesktop && styles.heroDesktop]}
+            >
                 <View style={[styles.heroContent, isDesktop && styles.heroContentDesktop]}>
+                    {/* Logo */}
+                    <Image
+                        source={require('@/assets/images/logo.png')}
+                        style={styles.logo}
+                        resizeMode="contain"
+                    />
+
                     <Text style={[styles.heroTitle, isDesktop && styles.heroTitleDesktop]}>
                         Streamline Your{'\n'}Delivery Business
                     </Text>
                     <Text style={[styles.heroSubtitle, isDesktop && styles.heroSubtitleDesktop]}>
-                        Manage orders, track deliveries, and grow your business with Mapnshop's all-in-one platform.
+                        Manage orders, track deliveries, and grow your business with Mapnshop's all-in-one platform. Real-time sync across all devices.
                     </Text>
-                    <View style={styles.heroCTARow}>
-                        <TouchableOpacity
-                            style={styles.primaryButton}
-                            onPress={() => router.push('/auth')}
-                        >
-                            <Text style={styles.primaryButtonText}>Get Started Free</Text>
-                            <ArrowRight size={20} color={Colors.primaryForeground} />
-                        </TouchableOpacity>
+
+                    {/* Benefits Row */}
+                    <View style={styles.benefitsRow}>
+                        {benefits.map((benefit, index) => (
+                            <View key={index} style={styles.benefitItem}>
+                                <benefit.icon size={16} color="rgba(255,255,255,0.9)" />
+                                <Text style={styles.benefitText}>{benefit.text}</Text>
+                            </View>
+                        ))}
                     </View>
+
+                    <TouchableOpacity
+                        style={styles.primaryButton}
+                        onPress={() => router.push('/auth')}
+                    >
+                        <Text style={styles.primaryButtonText}>Get Started Free</Text>
+                        <ArrowRight size={20} color={Colors.primary} />
+                    </TouchableOpacity>
+
+                    <Text style={styles.heroFootnote}>No credit card required • Free forever</Text>
                 </View>
-            </View>
+            </LinearGradient>
 
             {/* Features Section */}
-            <View style={[styles.section, styles.featuresSection]}>
+            <View style={styles.featuresSection}>
                 <Text style={styles.sectionTitle}>Everything You Need to Succeed</Text>
                 <Text style={styles.sectionSubtitle}>
                     Powerful features designed for modern delivery businesses
@@ -72,9 +100,14 @@ export default function LandingPage() {
                 <View style={[styles.featuresGrid, isDesktop && styles.featuresGridDesktop]}>
                     {features.map((feature, index) => (
                         <View key={index} style={[styles.featureCard, isDesktop && styles.featureCardDesktop]}>
-                            <View style={styles.featureIconContainer}>
-                                <feature.icon size={32} color={Colors.primary} />
-                            </View>
+                            <LinearGradient
+                                colors={feature.gradient}
+                                start={{ x: 0, y: 0 }}
+                                end={{ x: 1, y: 1 }}
+                                style={styles.featureIconContainer}
+                            >
+                                <feature.icon size={28} color="#FFFFFF" />
+                            </LinearGradient>
                             <Text style={styles.featureTitle}>{feature.title}</Text>
                             <Text style={styles.featureDescription}>{feature.description}</Text>
                         </View>
@@ -82,26 +115,34 @@ export default function LandingPage() {
                 </View>
             </View>
 
-            {/* How It Works Section */}
-            <View style={[styles.section, styles.howItWorksSection]}>
-                <Text style={styles.sectionTitle}>How It Works</Text>
-                <Text style={styles.sectionSubtitle}>Get started in three simple steps</Text>
-
-                <View style={[styles.stepsContainer, isDesktop && styles.stepsContainerDesktop]}>
-                    {steps.map((step, index) => (
-                        <View key={index} style={styles.stepCard}>
-                            <View style={styles.stepNumber}>
-                                <Text style={styles.stepNumberText}>{step.number}</Text>
-                            </View>
-                            <Text style={styles.stepTitle}>{step.title}</Text>
-                            <Text style={styles.stepDescription}>{step.description}</Text>
-                        </View>
-                    ))}
+            {/* Stats Section */}
+            <LinearGradient
+                colors={['#F9FAFB', '#F3F4F6']}
+                style={styles.statsSection}
+            >
+                <View style={[styles.statsGrid, isDesktop && styles.statsGridDesktop]}>
+                    <View style={styles.statCard}>
+                        <Text style={styles.statNumber}>500+</Text>
+                        <Text style={styles.statLabel}>Active Businesses</Text>
+                    </View>
+                    <View style={styles.statCard}>
+                        <Text style={styles.statNumber}>50K+</Text>
+                        <Text style={styles.statLabel}>Orders Processed</Text>
+                    </View>
+                    <View style={styles.statCard}>
+                        <Text style={styles.statNumber}>99.9%</Text>
+                        <Text style={styles.statLabel}>Uptime</Text>
+                    </View>
                 </View>
-            </View>
+            </LinearGradient>
 
             {/* CTA Section */}
-            <View style={styles.ctaSection}>
+            <LinearGradient
+                colors={['#3B82F6', '#2563EB']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.ctaSection}
+            >
                 <View style={styles.ctaContent}>
                     <Text style={styles.ctaTitle}>Ready to Transform Your Business?</Text>
                     <Text style={styles.ctaSubtitle}>
@@ -112,10 +153,10 @@ export default function LandingPage() {
                         onPress={() => router.push('/auth')}
                     >
                         <Text style={styles.ctaButtonText}>Start Free Today</Text>
-                        <ArrowRight size={20} color={Colors.primaryForeground} />
+                        <ArrowRight size={20} color={Colors.primary} />
                     </TouchableOpacity>
                 </View>
-            </View>
+            </LinearGradient>
 
             {/* Footer */}
             <View style={styles.footer}>
@@ -144,30 +185,36 @@ const styles = StyleSheet.create({
         backgroundColor: Colors.background,
     },
     hero: {
-        backgroundColor: Colors.primary,
         paddingTop: Platform.OS === 'web' ? 80 : 60,
         paddingBottom: 80,
         paddingHorizontal: Layout.spacing.lg,
     },
     heroDesktop: {
-        paddingTop: 120,
-        paddingBottom: 120,
+        paddingTop: 100,
+        paddingBottom: 100,
     },
     heroContent: {
         maxWidth: 800,
         alignSelf: 'center',
         width: '100%',
+        alignItems: 'center',
     },
     heroContentDesktop: {
-        maxWidth: 1200,
+        maxWidth: 900,
+    },
+    logo: {
+        width: 120,
+        height: 120,
+        marginBottom: Layout.spacing.lg,
     },
     heroTitle: {
-        fontSize: 40,
+        fontSize: 42,
         fontWeight: '900',
-        color: Colors.primaryForeground,
+        color: '#FFFFFF',
         marginBottom: Layout.spacing.md,
         letterSpacing: -1,
-        lineHeight: 48,
+        lineHeight: 50,
+        textAlign: 'center',
     },
     heroTitleDesktop: {
         fontSize: 64,
@@ -175,44 +222,65 @@ const styles = StyleSheet.create({
     },
     heroSubtitle: {
         fontSize: 18,
-        color: Colors.primaryForeground,
-        opacity: 0.9,
+        color: 'rgba(255,255,255,0.95)',
         marginBottom: Layout.spacing.xl,
         lineHeight: 28,
+        textAlign: 'center',
     },
     heroSubtitleDesktop: {
-        fontSize: 22,
-        lineHeight: 34,
+        fontSize: 20,
+        lineHeight: 32,
     },
-    heroCTARow: {
+    benefitsRow: {
         flexDirection: 'row',
+        flexWrap: 'wrap',
+        justifyContent: 'center',
         gap: Layout.spacing.md,
+        marginBottom: Layout.spacing.xl,
+    },
+    benefitItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+        backgroundColor: 'rgba(255,255,255,0.15)',
+        paddingHorizontal: 12,
+        paddingVertical: 8,
+        borderRadius: Layout.borderRadius.md,
+    },
+    benefitText: {
+        fontSize: 13,
+        color: 'rgba(255,255,255,0.95)',
+        fontWeight: '600',
     },
     primaryButton: {
-        backgroundColor: Colors.background,
-        paddingVertical: 16,
-        paddingHorizontal: 32,
-        borderRadius: Layout.borderRadius.lg,
+        backgroundColor: '#FFFFFF',
+        paddingVertical: 18,
+        paddingHorizontal: 36,
+        borderRadius: Layout.borderRadius.xl,
         flexDirection: 'row',
         alignItems: 'center',
         gap: 8,
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.2,
-        shadowRadius: 8,
-        elevation: 4,
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.3,
+        shadowRadius: 16,
+        elevation: 8,
     },
     primaryButtonText: {
         fontSize: 18,
         fontWeight: '700',
         color: Colors.primary,
     },
-    section: {
-        paddingVertical: 80,
-        paddingHorizontal: Layout.spacing.lg,
+    heroFootnote: {
+        fontSize: 14,
+        color: 'rgba(255,255,255,0.8)',
+        marginTop: Layout.spacing.md,
+        textAlign: 'center',
     },
     featuresSection: {
-        backgroundColor: Colors.surface,
+        paddingVertical: 80,
+        paddingHorizontal: Layout.spacing.lg,
+        backgroundColor: Colors.background,
     },
     sectionTitle: {
         fontSize: 36,
@@ -239,31 +307,30 @@ const styles = StyleSheet.create({
         flexWrap: 'wrap',
     },
     featureCard: {
-        backgroundColor: Colors.background,
+        backgroundColor: Colors.surface,
         padding: Layout.spacing.xl,
         borderRadius: Layout.borderRadius.xl,
         borderWidth: 1,
         borderColor: Colors.border,
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
-        shadowRadius: 8,
-        elevation: 2,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.08,
+        shadowRadius: 12,
+        elevation: 3,
     },
     featureCardDesktop: {
-        width: 'calc(50% - 12px)',
+        width: 'calc(50% - 12px)' as any,
     },
     featureIconContainer: {
         width: 64,
         height: 64,
-        backgroundColor: Colors.primary + '15',
         borderRadius: Layout.borderRadius.lg,
         alignItems: 'center',
         justifyContent: 'center',
         marginBottom: Layout.spacing.md,
     },
     featureTitle: {
-        fontSize: 20,
+        fontSize: 22,
         fontWeight: '700',
         color: Colors.text.primary,
         marginBottom: Layout.spacing.sm,
@@ -273,50 +340,36 @@ const styles = StyleSheet.create({
         color: Colors.text.secondary,
         lineHeight: 24,
     },
-    howItWorksSection: {
-        backgroundColor: Colors.background,
+    statsSection: {
+        paddingVertical: 60,
+        paddingHorizontal: Layout.spacing.lg,
     },
-    stepsContainer: {
-        maxWidth: 1200,
+    statsGrid: {
+        maxWidth: 1000,
         alignSelf: 'center',
         width: '100%',
         gap: Layout.spacing.lg,
     },
-    stepsContainerDesktop: {
+    statsGridDesktop: {
         flexDirection: 'row',
+        justifyContent: 'space-around',
     },
-    stepCard: {
-        flex: 1,
+    statCard: {
         alignItems: 'center',
-        padding: Layout.spacing.xl,
+        padding: Layout.spacing.lg,
     },
-    stepNumber: {
-        width: 64,
-        height: 64,
-        borderRadius: 32,
-        backgroundColor: Colors.primary,
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginBottom: Layout.spacing.md,
+    statNumber: {
+        fontSize: 48,
+        fontWeight: '900',
+        color: Colors.primary,
+        marginBottom: Layout.spacing.xs,
     },
-    stepNumberText: {
-        fontSize: 28,
-        fontWeight: '800',
-        color: Colors.primaryForeground,
-    },
-    stepTitle: {
-        fontSize: 22,
-        fontWeight: '700',
-        color: Colors.text.primary,
-        marginBottom: Layout.spacing.sm,
-    },
-    stepDescription: {
+    statLabel: {
         fontSize: 16,
         color: Colors.text.secondary,
-        textAlign: 'center',
+        fontWeight: '600',
     },
     ctaSection: {
-        backgroundColor: Colors.primary,
         paddingVertical: 80,
         paddingHorizontal: Layout.spacing.lg,
     },
@@ -328,31 +381,30 @@ const styles = StyleSheet.create({
     ctaTitle: {
         fontSize: 36,
         fontWeight: '800',
-        color: Colors.primaryForeground,
+        color: '#FFFFFF',
         textAlign: 'center',
         marginBottom: Layout.spacing.sm,
         letterSpacing: -0.5,
     },
     ctaSubtitle: {
         fontSize: 18,
-        color: Colors.primaryForeground,
-        opacity: 0.9,
+        color: 'rgba(255,255,255,0.95)',
         textAlign: 'center',
         marginBottom: Layout.spacing.xl,
     },
     ctaButton: {
-        backgroundColor: Colors.background,
-        paddingVertical: 16,
-        paddingHorizontal: 32,
-        borderRadius: Layout.borderRadius.lg,
+        backgroundColor: '#FFFFFF',
+        paddingVertical: 18,
+        paddingHorizontal: 36,
+        borderRadius: Layout.borderRadius.xl,
         flexDirection: 'row',
         alignItems: 'center',
         gap: 8,
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.2,
-        shadowRadius: 8,
-        elevation: 4,
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.3,
+        shadowRadius: 16,
+        elevation: 8,
     },
     ctaButtonText: {
         fontSize: 18,
