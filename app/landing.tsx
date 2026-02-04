@@ -111,13 +111,13 @@ export default function LandingPage() {
                     {/* Desktop Navigation */}
                     {!isMobile && (
                         <View style={styles.navLinks}>
-                            <TouchableOpacity onPress={() => scrollToSection('problem')}>
+                            <TouchableOpacity onPress={() => router.push('/problem')}>
                                 <Text style={styles.navLink}>Problem</Text>
                             </TouchableOpacity>
-                            <TouchableOpacity onPress={() => scrollToSection('solution')}>
+                            <TouchableOpacity onPress={() => router.push('/solution')}>
                                 <Text style={styles.navLink}>Solution</Text>
                             </TouchableOpacity>
-                            <TouchableOpacity onPress={() => scrollToSection('features')}>
+                            <TouchableOpacity onPress={() => router.push('/features')}>
                                 <Text style={styles.navLink}>Features</Text>
                             </TouchableOpacity>
                             <TouchableOpacity
@@ -146,19 +146,19 @@ export default function LandingPage() {
                     <View style={styles.mobileMenu}>
                         <TouchableOpacity
                             style={styles.mobileMenuItem}
-                            onPress={() => scrollToSection('problem')}
+                            onPress={() => router.push('/problem')}
                         >
                             <Text style={styles.mobileMenuLink}>Problem</Text>
                         </TouchableOpacity>
                         <TouchableOpacity
                             style={styles.mobileMenuItem}
-                            onPress={() => scrollToSection('solution')}
+                            onPress={() => router.push('/solution')}
                         >
                             <Text style={styles.mobileMenuLink}>Solution</Text>
                         </TouchableOpacity>
                         <TouchableOpacity
                             style={styles.mobileMenuItem}
-                            onPress={() => scrollToSection('features')}
+                            onPress={() => router.push('/features')}
                         >
                             <Text style={styles.mobileMenuLink}>Features</Text>
                         </TouchableOpacity>
