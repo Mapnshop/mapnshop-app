@@ -101,7 +101,7 @@ export default function LandingPage() {
                     {/* Logo */}
                     <TouchableOpacity style={styles.navLogo} onPress={() => { }}>
                         <Image
-                            source={require('@/assets/images/mapnshop_logo.png')}
+                            source={require('@/assets/images/logo.png')}
                             style={styles.navLogoImage}
                             resizeMode="contain"
                         />
@@ -176,13 +176,6 @@ export default function LandingPage() {
                 {/* Hero Section */}
                 <View style={[styles.hero, isDesktop && styles.heroDesktop]}>
                     <View style={[styles.heroContent, isDesktop && styles.heroContentDesktop]}>
-                        <View style={styles.heroIconContainer}>
-                            <Image
-                                source={require('@/assets/images/mapnshop_logo.png')}
-                                style={styles.heroLogo}
-                                resizeMode="contain"
-                            />
-                        </View>
 
                         <Text style={[styles.heroTitle, isDesktop && styles.heroTitleDesktop]}>
                             One Inbox for All Your Orders
@@ -394,14 +387,14 @@ const styles = StyleSheet.create({
     navLogo: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 10,
+        gap: 1,
     },
     navLogoImage: {
-        width: 32,
-        height: 32,
+        width: 50,
+        height: 50,
     },
     navLogoText: {
-        fontSize: 18,
+        fontSize: 20,
         fontWeight: '700',
         color: Colors.text.primary,
     },
