@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform, useWindowDimensions, Image } from 'react-native';
 import { router } from 'expo-router';
-import { Inbox, CheckCircle, Eye, Calendar } from 'lucide-react-native';
+import { Inbox, CheckCircle, Eye, Calendar, Menu, X } from 'lucide-react-native';
 import { Colors } from '@/constants/Colors';
 import { Layout } from '@/constants/Layout';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -9,6 +9,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 export default function LandingPage() {
     const { width } = useWindowDimensions();
     const isDesktop = width >= 1024;
+    const isMobile = width < 768;
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     const problems = [
         'Orders arrive from too many places',
@@ -66,179 +68,275 @@ export default function LandingPage() {
         'Small food shops'
     ];
 
+    const scrollToSection = (sectionId: string) => {
+        // For web, you could implement smooth scrolling
+        setMobileMenuOpen(false);
+    };
+
     return (
-        <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-            {/* Hero Section */}
-            <View style={[styles.hero, isDesktop && styles.heroDesktop]}>
-                <View style={[styles.heroContent, isDesktop && styles.heroContentDesktop]}>
-                    <Image
-                        source={require('@/assets/images/mapnshop_logo.png')}
-                        style={styles.logo}
-                        resizeMode="contain"
-                    />
-
-                    <Text style={[styles.heroTitle, isDesktop && styles.heroTitleDesktop]}>
-                        One Inbox for All Your Orders
-                    </Text>
-
-                    <Text style={[styles.heroSubtitle, isDesktop && styles.heroSubtitleDesktop]}>
-                        Orders from walk-ins, phone calls, WhatsApp, Instagram, and delivery apps — all in one place.
-                    </Text>
-
-                    <Text style={styles.heroSupporting}>
-                        Mapnshop is the internal system your team uses to see what needs to be done right now.
-                    </Text>
-
-                    <TouchableOpacity
-                        style={styles.primaryButton}
-                        onPress={() => router.push('/auth')}
-                    >
-                        <Text style={styles.primaryButtonText}>Request Early Access</Text>
+        <View style={styles.container}>
+            {/* Navigation Header */}
+            <View style={styles.nav}>
+                <View style={[styles.navContent, isDesktop && styles.navContentDesktop]}>
+                    {/* Logo */}
+                    <TouchableOpacity style={styles.navLogo} onPress={() => { }}>
+                        <Image
+                            source={require('@/assets/images/mapnshop_logo.png')}
+                            style={styles.navLogoImage}
+                            resizeMode="contain"
+                        />
+                        <Text style={styles.navLogoText}>Mapnshop</Text>
                     </TouchableOpacity>
 
-                    <Text style={styles.heroFootnote}>
-                        Currently onboarding a small number of local businesses.
-                    </Text>
-                </View>
-            </View>
-
-            {/* Problem Section */}
-            <View style={styles.section}>
-                <Text style={styles.sectionTitle}>
-                    Local Businesses Don't Have a Sales Problem.{'\n'}They Have a Coordination Problem.
-                </Text>
-
-                <View style={styles.problemList}>
-                    {problems.map((problem, index) => (
-                        <View key={index} style={styles.problemItem}>
-                            <View style={styles.problemBullet} />
-                            <Text style={styles.problemText}>{problem}</Text>
+                    {/* Desktop Navigation */}
+                    {!isMobile && (
+                        <View style={styles.navLinks}>
+                            <TouchableOpacity onPress={() => scrollToSection('problem')}>
+                                <Text style={styles.navLink}>Problem</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity onPress={() => scrollToSection('solution')}>
+                                <Text style={styles.navLink}>Solution</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity onPress={() => scrollToSection('features')}>
+                                <Text style={styles.navLink}>Features</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                style={styles.navCTA}
+                                onPress={() => router.push('/auth')}
+                            >
+                                <Text style={styles.navCTAText}>Request Access</Text>
+                            </TouchableOpacity>
                         </View>
-                    ))}
+                    )}
+
+                    {/* Mobile Menu Button */}
+                    {isMobile && (
+                        <TouchableOpacity onPress={() => setMobileMenuOpen(!mobileMenuOpen)}>
+                            {mobileMenuOpen ? (
+                                <X size={24} color={Colors.text.primary} />
+                            ) : (
+                                <Menu size={24} color={Colors.text.primary} />
+                            )}
+                        </TouchableOpacity>
+                    )}
                 </View>
 
-                <Text style={styles.problemClose}>
-                    More orders don't fix chaos. Clarity does.
-                </Text>
+                {/* Mobile Menu */}
+                {isMobile && mobileMenuOpen && (
+                    <View style={styles.mobileMenu}>
+                        <TouchableOpacity
+                            style={styles.mobileMenuItem}
+                            onPress={() => scrollToSection('problem')}
+                        >
+                            <Text style={styles.mobileMenuLink}>Problem</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            style={styles.mobileMenuItem}
+                            onPress={() => scrollToSection('solution')}
+                        >
+                            <Text style={styles.mobileMenuLink}>Solution</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            style={styles.mobileMenuItem}
+                            onPress={() => scrollToSection('features')}
+                        >
+                            <Text style={styles.mobileMenuLink}>Features</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            style={styles.mobileMenuCTA}
+                            onPress={() => router.push('/auth')}
+                        >
+                            <Text style={styles.mobileMenuCTAText}>Request Access</Text>
+                        </TouchableOpacity>
+                    </View>
+                )}
             </View>
 
-            {/* Solution Section */}
-            <View style={[styles.section, styles.solutionSection]}>
-                <Text style={styles.sectionTitle}>
-                    Mapnshop Replaces Chaos With One Operational View
-                </Text>
+            <ScrollView showsVerticalScrollIndicator={false}>
+                {/* Hero Section */}
+                <View style={[styles.hero, isDesktop && styles.heroDesktop]}>
+                    <View style={[styles.heroContent, isDesktop && styles.heroContentDesktop]}>
+                        <View style={styles.heroIconContainer}>
+                            <Image
+                                source={require('@/assets/images/mapnshop_logo.png')}
+                                style={styles.heroLogo}
+                                resizeMode="contain"
+                            />
+                        </View>
 
-                <View style={styles.solutionPoints}>
-                    <Text style={styles.solutionPoint}>All orders live in one inbox</Text>
-                    <Text style={styles.solutionPoint}>Every order has a clear status</Text>
-                    <Text style={styles.solutionPoint}>Staff always know what's next</Text>
-                    <Text style={styles.solutionPoint}>Owners see the day clearly</Text>
+                        <Text style={[styles.heroTitle, isDesktop && styles.heroTitleDesktop]}>
+                            One Inbox for All Your Orders
+                        </Text>
+
+                        <Text style={[styles.heroSubtitle, isDesktop && styles.heroSubtitleDesktop]}>
+                            Orders from walk-ins, phone calls, WhatsApp, Instagram, and delivery apps — all in one place.
+                        </Text>
+
+                        <Text style={styles.heroSupporting}>
+                            Mapnshop is the internal system your team uses to see what needs to be done right now.
+                        </Text>
+
+                        <TouchableOpacity
+                            style={styles.primaryButton}
+                            onPress={() => router.push('/auth')}
+                        >
+                            <Text style={styles.primaryButtonText}>Request Early Access</Text>
+                        </TouchableOpacity>
+
+                        <Text style={styles.heroFootnote}>
+                            Currently onboarding a small number of local businesses.
+                        </Text>
+                    </View>
                 </View>
 
-                <View style={styles.principleBox}>
-                    <Text style={styles.principleText}>
-                        Customers keep ordering the way they already do. Mapnshop works underneath as the system of record.
+                {/* Problem Section */}
+                <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>
+                        Local Businesses Don't Have a Sales Problem.{'\n'}They Have a Coordination Problem.
                     </Text>
-                </View>
-            </View>
 
-            {/* How It Works */}
-            <View style={styles.section}>
-                <Text style={styles.sectionTitle}>How It Works</Text>
-
-                <View style={[styles.stepsContainer, isDesktop && styles.stepsContainerDesktop]}>
-                    {steps.map((step, index) => (
-                        <View key={index} style={styles.stepCard}>
-                            <View style={styles.stepNumber}>
-                                <Text style={styles.stepNumberText}>{step.number}</Text>
+                    <View style={styles.problemList}>
+                        {problems.map((problem, index) => (
+                            <View key={index} style={styles.problemItem}>
+                                <View style={styles.problemBullet} />
+                                <Text style={styles.problemText}>{problem}</Text>
                             </View>
-                            <Text style={styles.stepTitle}>{step.title}</Text>
-                            <Text style={styles.stepDescription}>{step.description}</Text>
-                        </View>
-                    ))}
-                </View>
-            </View>
+                        ))}
+                    </View>
 
-            {/* Features */}
-            <View style={[styles.section, styles.featuresSection]}>
-                <View style={[styles.featuresGrid, isDesktop && styles.featuresGridDesktop]}>
-                    {features.map((feature, index) => (
-                        <View key={index} style={styles.featureCard}>
-                            <View style={styles.featureIconContainer}>
-                                <feature.icon size={24} color={Colors.primary} />
-                            </View>
-                            <Text style={styles.featureTitle}>{feature.title}</Text>
-                            <Text style={styles.featureDescription}>{feature.description}</Text>
-                        </View>
-                    ))}
-                </View>
-            </View>
-
-            {/* Who It's For */}
-            <View style={styles.section}>
-                <Text style={styles.sectionTitle}>
-                    Built for Local Businesses That Take Orders Every Day
-                </Text>
-
-                <View style={styles.businessList}>
-                    {businesses.map((business, index) => (
-                        <Text key={index} style={styles.businessItem}>• {business}</Text>
-                    ))}
-                </View>
-
-                <Text style={styles.businessFootnote}>
-                    If orders matter to your day, Mapnshop is for you.
-                </Text>
-            </View>
-
-            {/* Early Access */}
-            <View style={[styles.section, styles.earlyAccessSection]}>
-                <Text style={styles.sectionTitle}>Early Access</Text>
-
-                <Text style={styles.earlyAccessText}>
-                    Mapnshop is currently in pilot. We're working closely with a small number of local businesses to build the right operational system before expanding.
-                </Text>
-            </View>
-
-            {/* Final CTA */}
-            <LinearGradient
-                colors={['#3B82F6', '#2563EB'] as const}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={styles.ctaSection}
-            >
-                <View style={styles.ctaContent}>
-                    <Text style={styles.ctaTitle}>Replace Order Chaos With Clarity</Text>
-                    <TouchableOpacity
-                        style={styles.ctaButton}
-                        onPress={() => router.push('/auth')}
-                    >
-                        <Text style={styles.ctaButtonText}>Request Early Access</Text>
-                    </TouchableOpacity>
-                    <Text style={styles.ctaSubtext}>
-                        We'll contact you personally to see if Mapnshop is a good fit.
+                    <Text style={styles.problemClose}>
+                        More orders don't fix chaos. Clarity does.
                     </Text>
                 </View>
-            </LinearGradient>
 
-            {/* Footer */}
-            <View style={styles.footer}>
-                <Text style={styles.footerText}>© 2026 Mapnshop</Text>
-                <View style={styles.footerLinks}>
-                    <TouchableOpacity onPress={() => router.push('/support/privacy')}>
-                        <Text style={styles.footerLink}>Privacy</Text>
-                    </TouchableOpacity>
-                    <Text style={styles.footerDivider}>•</Text>
-                    <TouchableOpacity onPress={() => router.push('/support/terms')}>
-                        <Text style={styles.footerLink}>Terms</Text>
-                    </TouchableOpacity>
-                    <Text style={styles.footerDivider}>•</Text>
-                    <TouchableOpacity onPress={() => router.push('/support/contact')}>
-                        <Text style={styles.footerLink}>Contact</Text>
-                    </TouchableOpacity>
+                {/* Solution Section */}
+                <View style={[styles.section, styles.solutionSection]}>
+                    <Text style={styles.sectionTitle}>
+                        Mapnshop Replaces Chaos With One Operational View
+                    </Text>
+
+                    <View style={styles.solutionPoints}>
+                        <Text style={styles.solutionPoint}>All orders live in one inbox</Text>
+                        <Text style={styles.solutionPoint}>Every order has a clear status</Text>
+                        <Text style={styles.solutionPoint}>Staff always know what's next</Text>
+                        <Text style={styles.solutionPoint}>Owners see the day clearly</Text>
+                    </View>
+
+                    <View style={styles.principleBox}>
+                        <Text style={styles.principleText}>
+                            Customers keep ordering the way they already do. Mapnshop works underneath as the system of record.
+                        </Text>
+                    </View>
                 </View>
-            </View>
-        </ScrollView>
+
+                {/* How It Works */}
+                <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>How It Works</Text>
+
+                    <View style={[styles.stepsContainer, isDesktop && styles.stepsContainerDesktop]}>
+                        {steps.map((step, index) => (
+                            <View key={index} style={styles.stepCard}>
+                                <View style={styles.stepNumber}>
+                                    <Text style={styles.stepNumberText}>{step.number}</Text>
+                                </View>
+                                <Text style={styles.stepTitle}>{step.title}</Text>
+                                <Text style={styles.stepDescription}>{step.description}</Text>
+                            </View>
+                        ))}
+                    </View>
+                </View>
+
+                {/* Features */}
+                <View style={[styles.section, styles.featuresSection]}>
+                    <View style={[styles.featuresGrid, isDesktop && styles.featuresGridDesktop]}>
+                        {features.map((feature, index) => (
+                            <View key={index} style={[styles.featureCard, isDesktop && styles.featureCardDesktop]}>
+                                <View style={styles.featureIconContainer}>
+                                    <feature.icon size={24} color={Colors.primary} />
+                                </View>
+                                <Text style={styles.featureTitle}>{feature.title}</Text>
+                                <Text style={styles.featureDescription}>{feature.description}</Text>
+                            </View>
+                        ))}
+                    </View>
+                </View>
+
+                {/* Who It's For */}
+                <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>
+                        Built for Local Businesses That Take Orders Every Day
+                    </Text>
+
+                    <View style={styles.businessList}>
+                        {businesses.map((business, index) => (
+                            <Text key={index} style={styles.businessItem}>• {business}</Text>
+                        ))}
+                    </View>
+
+                    <Text style={styles.businessFootnote}>
+                        If orders matter to your day, Mapnshop is for you.
+                    </Text>
+                </View>
+
+                {/* Early Access */}
+                <View style={[styles.section, styles.earlyAccessSection]}>
+                    <Text style={styles.sectionTitle}>Early Access</Text>
+
+                    <Text style={styles.earlyAccessText}>
+                        Mapnshop is currently in pilot. We're working closely with a small number of local businesses to build the right operational system before expanding.
+                    </Text>
+                </View>
+
+                {/* Final CTA */}
+                <LinearGradient
+                    colors={['#3B82F6', '#2563EB'] as const}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={styles.ctaSection}
+                >
+                    <View style={styles.ctaContent}>
+                        <Text style={styles.ctaTitle}>Replace Order Chaos With Clarity</Text>
+                        <TouchableOpacity
+                            style={styles.ctaButton}
+                            onPress={() => router.push('/auth')}
+                        >
+                            <Text style={styles.ctaButtonText}>Request Early Access</Text>
+                        </TouchableOpacity>
+                        <Text style={styles.ctaSubtext}>
+                            We'll contact you personally to see if Mapnshop is a good fit.
+                        </Text>
+                    </View>
+                </LinearGradient>
+
+                {/* Footer */}
+                <View style={styles.footer}>
+                    <View style={[styles.footerContent, isDesktop && styles.footerContentDesktop]}>
+                        <View style={styles.footerBrand}>
+                            <Image
+                                source={require('@/assets/images/mapnshop_logo.png')}
+                                style={styles.footerLogo}
+                                resizeMode="contain"
+                            />
+                            <Text style={styles.footerBrandText}>Mapnshop</Text>
+                        </View>
+                        <View style={styles.footerLinks}>
+                            <TouchableOpacity onPress={() => router.push('/support/privacy')}>
+                                <Text style={styles.footerLink}>Privacy</Text>
+                            </TouchableOpacity>
+                            <Text style={styles.footerDivider}>•</Text>
+                            <TouchableOpacity onPress={() => router.push('/support/terms')}>
+                                <Text style={styles.footerLink}>Terms</Text>
+                            </TouchableOpacity>
+                            <Text style={styles.footerDivider}>•</Text>
+                            <TouchableOpacity onPress={() => router.push('/support/contact')}>
+                                <Text style={styles.footerLink}>Contact</Text>
+                            </TouchableOpacity>
+                        </View>
+                        <Text style={styles.footerCopyright}>© 2026 Mapnshop. All rights reserved.</Text>
+                    </View>
+                </View>
+            </ScrollView>
+        </View>
     );
 }
 
@@ -247,17 +345,105 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: Colors.background,
     },
-    hero: {
+    // Navigation
+    nav: {
         backgroundColor: '#FFFFFF',
-        paddingTop: Platform.OS === 'web' ? 80 : 60,
-        paddingBottom: 60,
-        paddingHorizontal: Layout.spacing.lg,
         borderBottomWidth: 1,
         borderBottomColor: Colors.border,
+        ...Platform.select({
+            web: {
+                position: 'sticky' as any,
+                top: 0,
+                zIndex: 100,
+            },
+        }),
+    },
+    navContent: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingHorizontal: Layout.spacing.lg,
+        paddingVertical: Layout.spacing.md,
+        maxWidth: 1200,
+        alignSelf: 'center',
+        width: '100%',
+    },
+    navContentDesktop: {
+        paddingHorizontal: Layout.spacing.xl,
+    },
+    navLogo: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 10,
+    },
+    navLogoImage: {
+        width: 32,
+        height: 32,
+    },
+    navLogoText: {
+        fontSize: 18,
+        fontWeight: '700',
+        color: Colors.text.primary,
+    },
+    navLinks: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: Layout.spacing.lg,
+    },
+    navLink: {
+        fontSize: 15,
+        color: Colors.text.secondary,
+        fontWeight: '500',
+    },
+    navCTA: {
+        backgroundColor: Colors.primary,
+        paddingVertical: 10,
+        paddingHorizontal: 20,
+        borderRadius: Layout.borderRadius.md,
+    },
+    navCTAText: {
+        fontSize: 14,
+        fontWeight: '600',
+        color: '#FFFFFF',
+    },
+    mobileMenu: {
+        backgroundColor: '#FFFFFF',
+        borderTopWidth: 1,
+        borderTopColor: Colors.border,
+        paddingVertical: Layout.spacing.md,
+    },
+    mobileMenuItem: {
+        paddingVertical: Layout.spacing.sm,
+        paddingHorizontal: Layout.spacing.lg,
+    },
+    mobileMenuLink: {
+        fontSize: 16,
+        color: Colors.text.secondary,
+        fontWeight: '500',
+    },
+    mobileMenuCTA: {
+        marginHorizontal: Layout.spacing.lg,
+        marginTop: Layout.spacing.sm,
+        backgroundColor: Colors.primary,
+        paddingVertical: 12,
+        borderRadius: Layout.borderRadius.md,
+        alignItems: 'center',
+    },
+    mobileMenuCTAText: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#FFFFFF',
+    },
+    // Hero
+    hero: {
+        backgroundColor: '#FFFFFF',
+        paddingTop: 60,
+        paddingBottom: 80,
+        paddingHorizontal: Layout.spacing.lg,
     },
     heroDesktop: {
         paddingTop: 100,
-        paddingBottom: 80,
+        paddingBottom: 120,
     },
     heroContent: {
         maxWidth: 700,
@@ -268,51 +454,59 @@ const styles = StyleSheet.create({
     heroContentDesktop: {
         maxWidth: 800,
     },
-    logo: {
-        width: 100,
-        height: 100,
-        marginBottom: Layout.spacing.lg,
+    heroIconContainer: {
+        marginBottom: Layout.spacing.xl,
+    },
+    heroLogo: {
+        width: 80,
+        height: 80,
     },
     heroTitle: {
-        fontSize: 36,
+        fontSize: 40,
         fontWeight: '800',
         color: Colors.text.primary,
-        marginBottom: Layout.spacing.md,
+        marginBottom: Layout.spacing.lg,
         letterSpacing: -0.5,
-        lineHeight: 44,
+        lineHeight: 48,
         textAlign: 'center',
     },
     heroTitleDesktop: {
-        fontSize: 48,
-        lineHeight: 56,
+        fontSize: 56,
+        lineHeight: 64,
     },
     heroSubtitle: {
-        fontSize: 18,
+        fontSize: 19,
         color: Colors.text.secondary,
         marginBottom: Layout.spacing.md,
-        lineHeight: 28,
+        lineHeight: 30,
         textAlign: 'center',
     },
     heroSubtitleDesktop: {
-        fontSize: 20,
-        lineHeight: 32,
+        fontSize: 21,
+        lineHeight: 34,
     },
     heroSupporting: {
         fontSize: 16,
         color: Colors.text.secondary,
-        marginBottom: Layout.spacing.xl,
-        lineHeight: 24,
+        marginBottom: Layout.spacing.xl * 1.5,
+        lineHeight: 26,
         textAlign: 'center',
+        maxWidth: 600,
     },
     primaryButton: {
         backgroundColor: Colors.primary,
-        paddingVertical: 16,
-        paddingHorizontal: 32,
+        paddingVertical: 18,
+        paddingHorizontal: 40,
         borderRadius: Layout.borderRadius.lg,
         marginBottom: Layout.spacing.md,
+        shadowColor: Colors.primary,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 12,
+        elevation: 4,
     },
     primaryButtonText: {
-        fontSize: 16,
+        fontSize: 17,
         fontWeight: '600',
         color: '#FFFFFF',
     },
@@ -321,45 +515,48 @@ const styles = StyleSheet.create({
         color: Colors.text.placeholder,
         textAlign: 'center',
     },
+    // Sections
     section: {
-        paddingVertical: 60,
+        paddingVertical: 80,
         paddingHorizontal: Layout.spacing.lg,
     },
     sectionTitle: {
-        fontSize: 28,
+        fontSize: 32,
         fontWeight: '700',
         color: Colors.text.primary,
         textAlign: 'center',
-        marginBottom: Layout.spacing.xl,
+        marginBottom: Layout.spacing.xl * 1.5,
         letterSpacing: -0.3,
-        lineHeight: 36,
+        lineHeight: 40,
+        maxWidth: 800,
+        alignSelf: 'center',
     },
     problemList: {
         maxWidth: 600,
         alignSelf: 'center',
-        marginBottom: Layout.spacing.xl,
+        marginBottom: Layout.spacing.xl * 1.5,
     },
     problemItem: {
         flexDirection: 'row',
         alignItems: 'flex-start',
-        marginBottom: Layout.spacing.md,
+        marginBottom: Layout.spacing.lg,
     },
     problemBullet: {
         width: 6,
         height: 6,
         borderRadius: 3,
-        backgroundColor: Colors.text.secondary,
-        marginTop: 8,
-        marginRight: 12,
+        backgroundColor: Colors.primary,
+        marginTop: 9,
+        marginRight: 14,
     },
     problemText: {
         flex: 1,
-        fontSize: 16,
+        fontSize: 17,
         color: Colors.text.secondary,
-        lineHeight: 24,
+        lineHeight: 26,
     },
     problemClose: {
-        fontSize: 18,
+        fontSize: 20,
         fontWeight: '600',
         color: Colors.text.primary,
         textAlign: 'center',
@@ -371,35 +568,35 @@ const styles = StyleSheet.create({
     solutionPoints: {
         maxWidth: 500,
         alignSelf: 'center',
-        marginBottom: Layout.spacing.xl,
+        marginBottom: Layout.spacing.xl * 1.5,
     },
     solutionPoint: {
-        fontSize: 16,
+        fontSize: 17,
         color: Colors.text.secondary,
-        marginBottom: Layout.spacing.sm,
-        lineHeight: 24,
+        marginBottom: Layout.spacing.md,
+        lineHeight: 26,
         textAlign: 'center',
     },
     principleBox: {
-        maxWidth: 600,
+        maxWidth: 650,
         alignSelf: 'center',
         backgroundColor: Colors.background,
-        padding: Layout.spacing.lg,
+        padding: Layout.spacing.xl,
         borderRadius: Layout.borderRadius.lg,
-        borderLeftWidth: 3,
+        borderLeftWidth: 4,
         borderLeftColor: Colors.primary,
     },
     principleText: {
-        fontSize: 16,
+        fontSize: 17,
         color: Colors.text.primary,
-        lineHeight: 24,
+        lineHeight: 28,
         fontStyle: 'italic',
     },
     stepsContainer: {
         maxWidth: 1000,
         alignSelf: 'center',
         width: '100%',
-        gap: Layout.spacing.lg,
+        gap: Layout.spacing.xl,
     },
     stepsContainerDesktop: {
         flexDirection: 'row',
@@ -407,34 +604,34 @@ const styles = StyleSheet.create({
     stepCard: {
         flex: 1,
         alignItems: 'center',
-        padding: Layout.spacing.lg,
+        padding: Layout.spacing.xl,
     },
     stepNumber: {
-        width: 48,
-        height: 48,
-        borderRadius: 24,
+        width: 56,
+        height: 56,
+        borderRadius: 28,
         backgroundColor: Colors.primary,
         alignItems: 'center',
         justifyContent: 'center',
-        marginBottom: Layout.spacing.md,
+        marginBottom: Layout.spacing.lg,
     },
     stepNumberText: {
-        fontSize: 20,
+        fontSize: 24,
         fontWeight: '700',
         color: '#FFFFFF',
     },
     stepTitle: {
-        fontSize: 18,
+        fontSize: 19,
         fontWeight: '600',
         color: Colors.text.primary,
         marginBottom: Layout.spacing.sm,
         textAlign: 'center',
     },
     stepDescription: {
-        fontSize: 14,
+        fontSize: 15,
         color: Colors.text.secondary,
         textAlign: 'center',
-        lineHeight: 20,
+        lineHeight: 22,
     },
     featuresSection: {
         backgroundColor: Colors.surface,
@@ -450,47 +647,48 @@ const styles = StyleSheet.create({
         flexWrap: 'wrap',
     },
     featureCard: {
-        flex: 1,
-        minWidth: 200,
-        padding: Layout.spacing.lg,
+        padding: Layout.spacing.xl,
         backgroundColor: Colors.background,
-        borderRadius: Layout.borderRadius.lg,
+        borderRadius: Layout.borderRadius.xl,
         borderWidth: 1,
         borderColor: Colors.border,
     },
+    featureCardDesktop: {
+        width: 'calc(50% - 12px)' as any,
+    },
     featureIconContainer: {
-        width: 48,
-        height: 48,
+        width: 52,
+        height: 52,
         backgroundColor: Colors.primary + '15',
-        borderRadius: Layout.borderRadius.md,
+        borderRadius: Layout.borderRadius.lg,
         alignItems: 'center',
         justifyContent: 'center',
         marginBottom: Layout.spacing.md,
     },
     featureTitle: {
-        fontSize: 16,
+        fontSize: 18,
         fontWeight: '600',
         color: Colors.text.primary,
         marginBottom: Layout.spacing.xs,
     },
     featureDescription: {
-        fontSize: 14,
+        fontSize: 15,
         color: Colors.text.secondary,
-        lineHeight: 20,
+        lineHeight: 22,
     },
     businessList: {
         maxWidth: 400,
         alignSelf: 'center',
-        marginBottom: Layout.spacing.lg,
+        marginBottom: Layout.spacing.xl,
     },
     businessItem: {
-        fontSize: 16,
+        fontSize: 17,
         color: Colors.text.secondary,
         marginBottom: Layout.spacing.sm,
         textAlign: 'center',
     },
     businessFootnote: {
-        fontSize: 16,
+        fontSize: 17,
         color: Colors.text.primary,
         textAlign: 'center',
         fontStyle: 'italic',
@@ -499,15 +697,15 @@ const styles = StyleSheet.create({
         backgroundColor: Colors.surface,
     },
     earlyAccessText: {
-        fontSize: 16,
+        fontSize: 17,
         color: Colors.text.secondary,
-        lineHeight: 26,
+        lineHeight: 28,
         textAlign: 'center',
         maxWidth: 700,
         alignSelf: 'center',
     },
     ctaSection: {
-        paddingVertical: 60,
+        paddingVertical: 80,
         paddingHorizontal: Layout.spacing.lg,
     },
     ctaContent: {
@@ -516,42 +714,67 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     ctaTitle: {
-        fontSize: 28,
+        fontSize: 32,
         fontWeight: '700',
         color: '#FFFFFF',
         textAlign: 'center',
-        marginBottom: Layout.spacing.lg,
+        marginBottom: Layout.spacing.xl,
         letterSpacing: -0.3,
     },
     ctaButton: {
         backgroundColor: '#FFFFFF',
-        paddingVertical: 16,
-        paddingHorizontal: 32,
+        paddingVertical: 18,
+        paddingHorizontal: 40,
         borderRadius: Layout.borderRadius.lg,
         marginBottom: Layout.spacing.md,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.2,
+        shadowRadius: 12,
+        elevation: 4,
     },
     ctaButtonText: {
-        fontSize: 16,
+        fontSize: 17,
         fontWeight: '600',
         color: Colors.primary,
     },
     ctaSubtext: {
-        fontSize: 14,
+        fontSize: 15,
         color: 'rgba(255,255,255,0.9)',
         textAlign: 'center',
     },
     footer: {
         backgroundColor: Colors.surface,
-        paddingVertical: Layout.spacing.xl,
+        paddingVertical: Layout.spacing.xl * 1.5,
         paddingHorizontal: Layout.spacing.lg,
-        alignItems: 'center',
         borderTopWidth: 1,
         borderTopColor: Colors.border,
     },
-    footerText: {
-        fontSize: 14,
-        color: Colors.text.secondary,
-        marginBottom: Layout.spacing.sm,
+    footerContent: {
+        maxWidth: 1200,
+        alignSelf: 'center',
+        width: '100%',
+        alignItems: 'center',
+        gap: Layout.spacing.lg,
+    },
+    footerContentDesktop: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+    },
+    footerBrand: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 10,
+    },
+    footerLogo: {
+        width: 28,
+        height: 28,
+    },
+    footerBrandText: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: Colors.text.primary,
     },
     footerLinks: {
         flexDirection: 'row',
@@ -564,6 +787,10 @@ const styles = StyleSheet.create({
     },
     footerDivider: {
         fontSize: 14,
+        color: Colors.text.placeholder,
+    },
+    footerCopyright: {
+        fontSize: 13,
         color: Colors.text.placeholder,
     },
 });
