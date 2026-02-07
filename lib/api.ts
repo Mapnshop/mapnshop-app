@@ -241,6 +241,7 @@ export const ordersApi = {
 
   async getByBusinessId(businessId: string, options?: {
     status?: Order['status'] | 'active' | 'completed' | 'cancelled',
+    source?: 'manual' | 'uber_eats' | 'doordash', // Unified source filter
     search?: string,
     page?: number,
     limit?: number
@@ -261,6 +262,17 @@ export const ordersApi = {
         query = query.eq('status', 'cancelled');
       } else {
         query = query.eq('status', options.status);
+      }
+    }
+
+    // Source Filter
+    if (options?.source) {
+      if (options.source === 'manual') {
+        query = query.in('source', ['manual', 'phone', 'whatsapp', 'walk-in', 'check-in', 'instagram']);
+      } else if (options.source === 'uber_eats') {
+        query = query.in('source', ['Uber Eats', 'uber_eats']);
+      } else if (options.source === 'doordash') {
+        query = query.in('source', ['DoorDash', 'doordash']);
       }
     }
 

@@ -398,26 +398,51 @@ export default function CreateOrderScreen() {
           {/* Source Selection */}
           <Text style={styles.sectionTitle}>Order Source</Text>
           <View style={styles.sourceContainer}>
-            {(['manual', 'phone', 'whatsapp', 'walk-in', 'Uber Eats', 'Deliveroo', 'Just Eat', 'Hungry Panda', 'Talabat'] as const).map((source) => (
-              <TouchableOpacity
-                key={source}
-                style={[
-                  styles.sourceChip,
-                  formData.source === source && styles.sourceChipActive,
-                ]}
-                onPress={() => setFormData({ ...formData, source })}
-              >
-                <Text
+            {(['check-in', 'phone', 'whatsapp', 'instagram', 'delivery_app'] as const).map((sourceOption) => {
+              const isDeliveryApp = sourceOption === 'delivery_app';
+              // If current source is NOT one of the standard ones, and we are on 'delivery_app' tab, highlight it
+              const isCustomSource = !['manual', 'check-in', 'phone', 'whatsapp', 'instagram'].includes(formData.source);
+              const isActive = formData.source === sourceOption || (isDeliveryApp && isCustomSource);
+
+              return (
+                <TouchableOpacity
+                  key={sourceOption}
                   style={[
-                    styles.sourceText,
-                    formData.source === source && styles.sourceTextActive,
+                    styles.sourceChip,
+                    isActive && styles.sourceChipActive,
                   ]}
+                  onPress={() => {
+                    if (isDeliveryApp) {
+                      // If clicking "Delivery App", clear source so input shows empty or keep existing if already custom
+                      if (!isCustomSource) setFormData({ ...formData, source: '' });
+                    } else {
+                      setFormData({ ...formData, source: sourceOption });
+                    }
+                  }}
                 >
-                  {source.charAt(0).toUpperCase() + source.slice(1)}
-                </Text>
-              </TouchableOpacity>
-            ))}
+                  <Text
+                    style={[
+                      styles.sourceText,
+                      isActive && styles.sourceTextActive,
+                    ]}
+                  >
+                    {isDeliveryApp ? 'Delivery App' : sourceOption.replace('-', ' ').replace(/\b\w/g, c => c.toUpperCase())}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
           </View>
+
+          {/* Custom Delivery App Input */}
+          {(!['manual', 'check-in', 'phone', 'whatsapp', 'instagram'].includes(formData.source)) && (
+            <Input
+              label="Delivery App Name *"
+              value={['manual', 'check-in', 'phone', 'whatsapp', 'instagram'].includes(formData.source) ? '' : formData.source}
+              onChangeText={(text) => setFormData({ ...formData, source: text })}
+              placeholder="e.g. Talabat, Just Eat, Deliveroo"
+              containerStyle={{ marginBottom: Layout.spacing.lg }}
+            />
+          )}
 
           <Button
             title={loading ? 'Creating Order...' : 'Create Order'}

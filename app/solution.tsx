@@ -15,17 +15,17 @@ export default function SolutionPage() {
         {
             number: '1',
             title: 'Orders Come From Everywhere',
-            description: 'Walk-ins, phone, WhatsApp, Instagram, delivery apps.'
+            description: 'Uber Eats, DoorDash, Phone, Instagram, Walk-ins.'
         },
         {
             number: '2',
             title: 'They All Appear in One Inbox',
-            description: 'Every order, same format, same workflow.'
+            description: 'Unified view. Clear sorting. Allergy alerts.'
         },
         {
             number: '3',
             title: 'Your Team Executes With Clarity',
-            description: 'No guessing. No missed orders.'
+            description: 'No tablet juggling. No missed special requests.'
         }
     ];
 
@@ -92,10 +92,10 @@ export default function SolutionPage() {
                     </Text>
 
                     <View style={styles.solutionPoints}>
-                        <Text style={styles.solutionPoint}>All orders live in one inbox</Text>
-                        <Text style={styles.solutionPoint}>Every order has a clear status</Text>
-                        <Text style={styles.solutionPoint}>Staff always know what's next</Text>
-                        <Text style={styles.solutionPoint}>Owners see the day clearly</Text>
+                        <Text style={styles.solutionPoint}>One inbox for every order</Text>
+                        <Text style={styles.solutionPoint}>Clear status for every task</Text>
+                        <Text style={styles.solutionPoint}>No guessing for staff</Text>
+                        <Text style={styles.solutionPoint}>Full visibility for owners</Text>
                     </View>
 
                     <View style={styles.principleBox}>

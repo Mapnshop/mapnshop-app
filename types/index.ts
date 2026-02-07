@@ -60,8 +60,9 @@ export interface Order {
   tax?: number;
   delivery_fee?: number;
   total?: number;
-  source: 'manual' | 'phone' | 'whatsapp' | 'walk-in' | 'Uber Eats' | 'Deliveroo' | 'Just Eat' | 'Hungry Panda' | 'Talabat';
+  source: 'manual' | 'phone' | 'whatsapp' | 'check-in' | 'instagram' | 'uber_eats' | 'doordash' | string;
   source_details?: Record<string, any>;
+  allergy_note?: string; // Added for Unified Inbox
   status: 'created' | 'preparing' | 'ready' | 'completed' | 'cancelled'; // Added cancelled
   cancellation_reason?: string; // Added
   attachments?: string[]; // Added (JSONB array of strings)

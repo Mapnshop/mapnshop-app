@@ -15,6 +15,7 @@ import { BusinessProfileSection } from '@/components/settings/BusinessProfileSec
 import { OrderDefaultsSection } from '@/components/settings/OrderDefaultsSection';
 import { BusinessHoursSection } from '@/components/settings/BusinessHoursSection';
 import { TeamManagementSection } from '@/components/settings/TeamManagementSection';
+import { IntegrationsSection } from '@/components/settings/IntegrationsSection';
 import { NotificationsSection } from '@/components/settings/NotificationsSection';
 import { DataExportSection } from '@/components/settings/DataExportSection';
 import { HelpSupportSection } from '@/components/settings/HelpSupportSection';
@@ -308,6 +309,8 @@ Once you sign up with ${email}, you'll automatically have access to ${business?.
           showTeam={showTeam}
           setShowTeam={setShowTeam}
         />
+
+        <IntegrationsSection />
 
         <NotificationsSection />
 

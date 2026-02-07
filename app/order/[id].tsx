@@ -124,11 +124,32 @@ export default function OrderDetailsScreen() {
 
     setUpdating(true);
     try {
-      const updatedOrder = await ordersApi.updateStatus(order.id, newStatus);
-      setOrder(updatedOrder);
-      // Alert.alert('Success', `Order status updated to ${newStatus}`); // Removed to reduce noise
-    } catch (error) {
-      Alert.alert('Error', 'Failed to update order status');
+      // Use Edge Function for consistent sync logic
+      const { data, error } = await supabase.functions.invoke('update-order-status', {
+        body: {
+          order_id: order.id,
+          status: newStatus
+        }
+      });
+
+      if (error || data?.error) {
+        console.warn('Edge Function failed, falling back to direct DB update:', error || data?.error);
+        // Fallback: Direct DB update (Bypasses provider sync but keeps app working)
+        await ordersApi.updateStatus(order.id, newStatus);
+      }
+
+      // Reload to get fresh state
+      await loadOrderDetails();
+
+    } catch (error: any) {
+      console.error('Status Update Failed:', error);
+      // If even the fallback failed, then it's a real error (likely DB constraint)
+      if (error.message?.includes('violates check constraint')) {
+        Alert.alert('Database Error', 'Please run the "Master Fix Script" in Supabase SQL Editor to fix database rules.');
+      } else {
+        Alert.alert('Error', 'Failed to update order status. ' + (error.message || ''));
+      }
+      // Revert UI if needed, currently we reload or show error
     } finally {
       setUpdating(false);
     }
@@ -508,6 +529,19 @@ export default function OrderDetailsScreen() {
                     )}
                   </View>
 
+                  {/* ALLERGY / SPECIAL INSTRUCTIONS ALERT */}
+                  {(order.allergy_note || (order.notes && (order.notes.toLowerCase().includes('allergy') || order.notes.toLowerCase().includes('gluten') || order.notes.toLowerCase().includes('nut')))) && (
+                    <View style={styles.allergyContainer}>
+                      <View style={styles.allergyHeader}>
+                        <AlertTriangle size={20} color="#FFF" />
+                        <Text style={styles.allergyTitle}>ALLERGY / SPECIAL INSTRUCTIONS</Text>
+                      </View>
+                      <Text style={styles.allergyText}>
+                        {order.allergy_note || order.notes}
+                      </Text>
+                    </View>
+                  )}
+
                   <Text style={styles.sectionTitle}>Order Items</Text>
                   <Text style={styles.description}>{order.description}</Text>
 
@@ -566,7 +600,8 @@ export default function OrderDetailsScreen() {
           <View style={isDesktop ? styles.rightColumn : undefined}>
 
             {/* ACTION CENTER */}
-            {nextStatus && order.status !== 'cancelled' && order.status !== 'completed' && (
+            {/* ACTION CENTER */}
+            {order.status !== 'cancelled' && order.status !== 'completed' && (
               <View style={styles.actionsContainer}>
                 {showUndo && (
                   <View style={styles.undoContainer}>
@@ -576,12 +611,41 @@ export default function OrderDetailsScreen() {
                     </TouchableOpacity>
                   </View>
                 )}
-                <Button
-                  title={`Mark as ${nextStatus.toUpperCase()}`}
-                  onPress={() => updateOrderStatus(nextStatus)}
-                  disabled={updating}
-                  style={[styles.actionButton, { backgroundColor: getStatusColor(nextStatus), borderColor: getStatusColor(nextStatus) }]}
-                />
+
+                {/* Special UI for NEW/CREATED orders (Accept/Decline) - ONLY for Integrated Providers */}
+                {order.status === 'created' && ['Uber Eats', 'DoorDash', 'uber_eats', 'doordash'].includes(order.source) ? (
+                  <View style={{ gap: 12, width: '100%' }}>
+                    <Text style={{ fontSize: 14, color: Colors.text.secondary, textAlign: 'center', marginBottom: 4 }}>
+                      Incoming {order.source} Order
+                    </Text>
+                    <View style={{ flexDirection: 'row', gap: 12 }}>
+                      <Button
+                        title="Decline"
+                        onPress={handleCancelOrder}
+                        disabled={updating}
+                        variant="outline"
+                        style={{ flex: 1, borderColor: Colors.status.error }}
+                        textStyle={{ color: Colors.status.error }}
+                      />
+                      <Button
+                        title="Accept Order"
+                        onPress={() => updateOrderStatus('preparing')}
+                        disabled={updating}
+                        style={{ flex: 2, backgroundColor: Colors.status.success }}
+                      />
+                    </View>
+                  </View>
+                ) : (
+                  /* Standard Progression for other statuses (or non-integrated Created orders) */
+                  nextStatus && (
+                    <Button
+                      title={`Mark as ${nextStatus.replace('_', ' ').toUpperCase()}`}
+                      onPress={() => updateOrderStatus(nextStatus)}
+                      disabled={updating}
+                      style={[styles.actionButton, { backgroundColor: getStatusColor(nextStatus), borderColor: getStatusColor(nextStatus) }]}
+                    />
+                  )
+                )}
               </View>
             )}
 
@@ -1042,10 +1106,36 @@ const styles = StyleSheet.create({
     borderRadius: 100,
   },
   modalActions: {
-    position: 'absolute',
-    bottom: 50,
-    width: '100%',
-    paddingHorizontal: 20,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginTop: 20,
+  },
+  allergyContainer: {
+    backgroundColor: '#FEF2F2',
+    borderWidth: 2,
+    borderColor: '#DC2626',
+    borderRadius: 12,
+    marginBottom: 24,
+    overflow: 'hidden',
+  },
+  allergyHeader: {
+    backgroundColor: '#DC2626',
+    flexDirection: 'row',
     alignItems: 'center',
+    gap: 8,
+    padding: 12,
+  },
+  allergyTitle: {
+    color: '#FFF',
+    fontSize: 16,
+    fontWeight: '800',
+    letterSpacing: 0.5,
+  },
+  allergyText: {
+    padding: 16,
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#991B1B',
+    lineHeight: 26,
   },
 });

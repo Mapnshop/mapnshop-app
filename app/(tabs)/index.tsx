@@ -12,6 +12,7 @@ import { Colors } from '@/constants/Colors';
 import { Layout } from '@/constants/Layout';
 
 type FilterType = 'active' | 'completed' | 'cancelled' | 'all';
+type SourceFilterType = 'all' | 'manual' | 'uber_eats' | 'doordash';
 
 export default function InboxScreen() {
   const { business } = useBusiness();
@@ -20,6 +21,7 @@ export default function InboxScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [activeFilter, setActiveFilter] = useState<FilterType>('active');
+  const [activeSource, setActiveSource] = useState<SourceFilterType>('all');
   const [searchQuery, setSearchQuery] = useState('');
 
   // Responsive Grid State
@@ -43,9 +45,11 @@ export default function InboxScreen() {
       else setLoadingMore(true);
 
       const apiFilter = activeFilter === 'all' ? undefined : activeFilter;
+      const apiSource = activeSource === 'all' ? undefined : activeSource;
 
       const newOrders = await ordersApi.getByBusinessId(business.id, {
         status: apiFilter as any,
+        source: apiSource,
         search: searchQuery || undefined,
         page: targetPage,
         limit: LIMIT
@@ -92,7 +96,7 @@ export default function InboxScreen() {
     setPage(0);
     setHasMore(true);
     loadOrders(0, true);
-  }, [activeFilter, searchQuery]); // Re-fetch when filter/search changes
+  }, [activeFilter, activeSource, searchQuery]); // Re-fetch when filter/search changes
 
   useFocusEffect(
     useCallback(() => {
@@ -182,7 +186,7 @@ export default function InboxScreen() {
             />
           </View>
 
-          {/* Filter Chips */}
+          {/* Status Filters */}
           <View style={styles.filterRow}>
             {(['active', 'completed', 'cancelled', 'all'] as FilterType[]).map((f) => (
               <TouchableOpacity
@@ -200,6 +204,33 @@ export default function InboxScreen() {
                   ]}
                 >
                   {f.charAt(0).toUpperCase() + f.slice(1)}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          {/* Source Filters */}
+          <View style={[styles.filterRow, { marginTop: 12 }]}>
+            {(['all', 'manual', 'uber_eats', 'doordash'] as SourceFilterType[]).map((s) => (
+              <TouchableOpacity
+                key={s}
+                style={[
+                  styles.filterChip,
+                  { borderRadius: 8, paddingVertical: 4 }, // Smaller/Different style for secondary filter
+                  activeSource === s && styles.activeFilterChip,
+                ]}
+                onPress={() => setActiveSource(s)}
+              >
+                <Text
+                  style={[
+                    styles.filterText,
+                    { fontSize: 13 },
+                    activeSource === s && styles.activeFilterText,
+                  ]}
+                >
+                  {s === 'all' ? 'All Sources' :
+                    s === 'uber_eats' ? 'Uber Eats' :
+                      s === 'doordash' ? 'DoorDash' : 'Manual'}
                 </Text>
               </TouchableOpacity>
             ))}

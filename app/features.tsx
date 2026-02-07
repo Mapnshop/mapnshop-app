@@ -14,18 +14,18 @@ export default function FeaturesPage() {
     const features = [
         {
             icon: Inbox,
-            title: 'Unified Order Inbox',
-            description: 'See every order in one place.'
+            title: 'Unified Inbox',
+            description: 'Uber Eats, DoorDash, and custom apps in one feed.'
         },
         {
             icon: CheckCircle,
-            title: 'Clear Order States',
-            description: 'Know what\'s new, in progress, ready, or done.'
+            title: 'Any Order Source',
+            description: 'Track Phone, WhatsApp, and Instagram orders easily.'
         },
         {
             icon: Eye,
-            title: 'Source Visibility',
-            description: 'Always know where an order came from.'
+            title: 'Safety First',
+            description: 'Prominent alerts for allergies and special requests.'
         },
         {
             icon: Calendar,

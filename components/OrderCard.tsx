@@ -1,9 +1,13 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Pressable, Platform } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Pressable, Platform, Image } from 'react-native';
 import { Order } from '@/types';
-import { MapPin, Phone, Clock, MessageCircle, Store, Check, ArrowRight, Play } from 'lucide-react-native';
+import { MapPin, Phone, Clock, MessageCircle, Store, Check, ArrowRight, Play, ShoppingBag } from 'lucide-react-native';
 import { Colors } from '@/constants/Colors';
 import { Layout } from '@/constants/Layout';
+
+// Asset Imports
+const UberLogo = require('../assets/images/uber-eats-logo.png');
+const DoorDashLogo = require('../assets/images/doordash-logo.png');
 
 interface OrderCardProps {
   order: Order;
@@ -100,7 +104,21 @@ export function OrderCard({ order, onPress, onQuickAction }: OrderCardProps) {
     >
       <View style={styles.header}>
         <View style={styles.customerInfo}>
-          <Text style={styles.customerName} numberOfLines={1}>{order.customer_name}</Text>
+          {/* SOURCE BADGE */}
+          <View style={styles.sourceRow}>
+            {order.source === 'Uber Eats' || order.source === 'uber_eats' ? (
+              <Image source={UberLogo} style={styles.sourceIcon} resizeMode="contain" />
+            ) : (order.source === 'DoorDash' || order.source === 'doordash') ? (
+              <Image source={DoorDashLogo} style={styles.sourceIcon} resizeMode="contain" />
+            ) : (
+              // Manual/Other
+              <View style={[styles.sourceIcon, { backgroundColor: '#F3F4F6', alignItems: 'center', justifyContent: 'center' }]}>
+                <ShoppingBag size={12} color={Colors.text.secondary} />
+              </View>
+            )}
+            <Text style={styles.customerName} numberOfLines={1}>{order.customer_name}</Text>
+          </View>
+
           <View style={styles.phoneRow}>
             {order.source === 'whatsapp' ? <MessageCircle size={12} color="#25D366" /> : <Phone size={12} color={Colors.text.secondary} />}
             <Text style={styles.phone}>{order.customer_phone}</Text>
@@ -168,12 +186,23 @@ const styles = StyleSheet.create({
     flex: 1,
     marginRight: Layout.spacing.sm,
   },
+  sourceRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 4,
+  },
+  sourceIcon: {
+    width: 20,
+    height: 20,
+    borderRadius: 4,
+  },
   customerName: {
     fontSize: 16,
     fontWeight: '600',
     color: Colors.text.primary,
-    marginBottom: 2,
     letterSpacing: -0.3,
+    flex: 1,
   },
   phoneRow: {
     flexDirection: 'row',

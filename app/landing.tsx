@@ -19,10 +19,10 @@ export default function LandingPage() {
     const featuresRef = useRef<any>(null);
 
     const problems = [
-        'Orders arrive from too many places',
-        'Staff track orders in WhatsApp and memory',
+        'Orders arrive from too many tablets',
+        'Staff track phone orders on sticky notes',
         'Pickup and delivery get mixed up',
-        'Orders are missed or duplicated',
+        'Allergies and special requests are missed',
         'Owners constantly ask: "Did we handle this?"'
     ];
 
