@@ -6,7 +6,7 @@ import { useAuth } from './AuthContext';
 interface BusinessContextType {
   business: Business | null;
   loading: boolean;
-  setBusiness: (business: Business) => void;
+  setBusiness: (business: Business | null) => void;
   refreshBusiness: () => Promise<void>;
 }
 

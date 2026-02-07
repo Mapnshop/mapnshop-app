@@ -4,7 +4,7 @@ import { StatusBar } from 'expo-status-bar';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import { BusinessProvider, useBusiness } from '@/contexts/BusinessContext';
 import { useFrameworkReady } from '@/hooks/useFrameworkReady';
-import { View, ActivityIndicator, Text } from 'react-native';
+import { View, ActivityIndicator, Text, Platform } from 'react-native';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
 
@@ -24,29 +24,60 @@ function RootLayoutNav() {
     const inOnboarding = segments[0] === 'onboarding';
     const inLanding = segments[0] === 'landing';
     const inSupport = segments[0] === 'support';
+    const inPendingVerification = segments[0] === 'pending-verification';
     const inPublicPages = ['problem', 'solution', 'features'].includes(segments[0] as string);
 
     console.log('RootLayoutNav check:', {
       user: !!user,
       business: !!business,
+      verificationStatus: business?.verification_status,
       segments: segments,
       inAuthGroup,
       inOnboarding,
       inLanding,
       inSupport,
+      inPendingVerification,
       inPublicPages
     });
 
-    // Show landing page for non-authenticated users (only on web)
+    // Show auth page for non-authenticated users
+    // (landing page is web-only, mobile goes to auth)
     if (!user && !inAuthGroup && !inLanding && !inSupport && !inPublicPages) {
-      console.log('Redirecting to /landing');
-      router.replace('/landing');
+      // If we are on web and at the root path (empty segments or 'index'), redirect to landing
+      if (Platform.OS === 'web' && (!segments[0] || (segments[0] as string) === 'index')) {
+        console.log('Redirecting to /landing');
+        router.replace('/landing');
+      } else {
+        console.log('Redirecting to /auth');
+        router.replace('/auth');
+      }
     } else if (user && !business && !inOnboarding) {
+      // No business profile -> go to onboarding
       console.log('Redirecting to /onboarding');
       router.replace('/onboarding');
-    } else if (user && business && (inAuthGroup || inOnboarding || inLanding || !segments[0])) {
-      console.log('Redirecting to /(tabs)');
-      router.replace('/(tabs)');
+    } else if (user && business) {
+      // Handle verification states
+      const status = business.verification_status;
+
+      if (status === 'draft' || status === 'rejected') {
+        // Allow editing onboarding
+        if (!inOnboarding) {
+          console.log('Redirecting to /onboarding (draft/rejected)');
+          router.replace('/onboarding');
+        }
+      } else if (status === 'pending') {
+        // Lock in pending verification screen
+        if (!inPendingVerification) {
+          console.log('Redirecting to /pending-verification');
+          router.replace('/pending-verification');
+        }
+      } else if (status === 'approved') {
+        // Allow access to main app
+        if (inAuthGroup || inOnboarding || inPendingVerification || inLanding || !segments[0]) {
+          console.log('Redirecting to /(tabs)');
+          router.replace('/(tabs)');
+        }
+      }
     }
   }, [user, business, segments, authLoading, businessLoading]);
 
@@ -65,6 +96,7 @@ function RootLayoutNav() {
         <Stack.Screen name="landing" />
         <Stack.Screen name="auth" />
         <Stack.Screen name="onboarding" />
+        <Stack.Screen name="pending-verification" />
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="order/[id]" />
         <Stack.Screen name="+not-found" />

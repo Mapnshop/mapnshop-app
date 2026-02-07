@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, Alert, Platform, Share, TouchableOpacity } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
+import { useRouter } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
 import { useBusiness } from '@/contexts/BusinessContext';
-import { businessApi, membersApi } from '@/lib/api';
+import { businessApi, membersApi, profileApi, adminApi } from '@/lib/api';
 import { BusinessMember } from '@/types';
 import { Button } from '@/components/Button';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
@@ -18,9 +19,10 @@ import { NotificationsSection } from '@/components/settings/NotificationsSection
 import { DataExportSection } from '@/components/settings/DataExportSection';
 import { HelpSupportSection } from '@/components/settings/HelpSupportSection';
 import { AccountSecuritySection } from '@/components/settings/AccountSecuritySection';
-import { LogOut } from 'lucide-react-native';
+import { LogOut, ShieldCheck } from 'lucide-react-native';
 
 export default function SettingsScreen() {
+  const router = useRouter();
   const { user, signOut } = useAuth();
   const { business, setBusiness } = useBusiness();
   const [loading, setLoading] = useState(false);
@@ -83,7 +85,6 @@ export default function SettingsScreen() {
     // For simplicity, reusing handleSave since formData covers all.
     return handleSave();
   };
-
 
   React.useEffect(() => {
     if (business && showTeam) {
@@ -379,5 +380,57 @@ const styles = StyleSheet.create({
   logoutSubtext: {
     fontSize: 13,
     color: Colors.text.placeholder,
+  },
+  adminSection: {
+    marginTop: Layout.spacing.lg,
+    paddingTop: Layout.spacing.lg,
+    borderTopWidth: 1,
+    borderTopColor: Colors.border,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: Colors.text.primary,
+    marginBottom: Layout.spacing.md,
+  },
+  adminButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: Colors.primary,
+    padding: Layout.spacing.lg,
+    borderRadius: Layout.borderRadius.lg,
+    shadowColor: Colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  adminButtonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Layout.spacing.md,
+  },
+  adminButtonText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#FFF',
+  },
+  adminButtonSubtext: {
+    fontSize: 13,
+    color: 'rgba(255, 255, 255, 0.8)',
+  },
+  badge: {
+    backgroundColor: '#EF4444',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    minWidth: 24,
+    alignItems: 'center',
+  },
+  badgeText: {
+    color: '#FFF',
+    fontSize: 12,
+    fontWeight: '700',
   },
 });

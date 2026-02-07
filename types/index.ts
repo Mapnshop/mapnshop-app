@@ -30,6 +30,18 @@ export interface Business {
   default_delivery_fee?: number;
   currency?: string; // e.g., 'CAD', 'USD'
   created_at: string;
+  // Verification fields
+  submitted_at?: string;
+  verified_at?: string;
+  verified_by?: string;
+  rejection_reason?: string;
+  verification_status: 'draft' | 'pending' | 'approved' | 'rejected';
+}
+
+export interface Profile {
+  id: string;
+  role: 'admin' | 'business';
+  created_at: string;
 }
 
 

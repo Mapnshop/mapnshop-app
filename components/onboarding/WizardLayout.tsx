@@ -14,6 +14,7 @@ interface WizardLayoutProps {
     subtitle?: string;
     onBack?: () => void;
     showLogout?: boolean;
+    rejectionReason?: string | null;
 }
 
 export function WizardLayout({
@@ -23,7 +24,8 @@ export function WizardLayout({
     title,
     subtitle,
     onBack,
-    showLogout
+    showLogout,
+    rejectionReason
 }: WizardLayoutProps) {
     const { signOut } = useAuth();
     const progress = ((step + 1) / totalSteps) * 100;
@@ -68,6 +70,15 @@ export function WizardLayout({
             <View style={styles.progressBarBg}>
                 <View style={[styles.progressBarFill, { width: `${progress}%` }]} />
             </View>
+
+            {/* Rejection Reason Alert */}
+            {rejectionReason && (
+                <View style={styles.rejectionAlert}>
+                    <Text style={styles.rejectionTitle}>❌ Verification Needs Changes</Text>
+                    <Text style={styles.rejectionText}>{rejectionReason}</Text>
+                    <Text style={styles.rejectionSubtext}>Please update your information and resubmit.</Text>
+                </View>
+            )}
 
             {/* Header */}
             <View style={styles.header}>
@@ -138,5 +149,30 @@ const styles = StyleSheet.create({
     content: {
         gap: Layout.spacing.lg,
         paddingBottom: Layout.spacing.xxl,
+    },
+    rejectionAlert: {
+        backgroundColor: '#FEF2F2',
+        borderWidth: 1,
+        borderColor: '#FCA5A5',
+        borderRadius: 12,
+        padding: 16,
+        marginBottom: Layout.spacing.lg,
+    },
+    rejectionTitle: {
+        fontSize: 16,
+        fontWeight: '700',
+        color: '#DC2626',
+        marginBottom: 8,
+    },
+    rejectionText: {
+        fontSize: 14,
+        color: '#991B1B',
+        marginBottom: 8,
+        lineHeight: 20,
+    },
+    rejectionSubtext: {
+        fontSize: 13,
+        color: '#B91C1C',
+        fontStyle: 'italic',
     },
 });

@@ -11,7 +11,7 @@ import { StepContact } from '@/components/onboarding/StepContact';
 import { COUNTRY_CODES, CountryCodeItem } from '@/constants/CountryCodes';
 
 export default function OnboardingScreen() {
-  const { setBusiness } = useBusiness();
+  const { business, setBusiness } = useBusiness();
   const [loading, setLoading] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
 
@@ -29,6 +29,38 @@ export default function OnboardingScreen() {
   const [countryCode, setCountryCode] = useState<CountryCodeItem>(COUNTRY_CODES[0]);
 
   const totalSteps = 3;
+
+  // Pre-fill form if business exists (e.g. for rejection resubmission)
+  React.useEffect(() => {
+    console.log('Onboarding Effect Triggered. Business:', business);
+    if (business) {
+      // alert(`DEBUG: Business found! Status: ${business.verification_status}`);
+      if (business.verification_status === 'rejected') {
+        console.log('Pre-filling form for rejected business:', business);
+        // alert('DEBUG: Pre-filling form data!');
+        // Parse phone back to parts if possible, or just put it all in (simplified)
+        // Assuming phone includes country code, we might need to be smart, 
+        // but for now let's just pre-fill the raw values.
+
+        // Attempt to extract country code from phone or default
+        // This is a rough heuristic
+        const foundCode = COUNTRY_CODES.find(c => business.phone.startsWith(c.dial_code));
+        if (foundCode) {
+          setCountryCode(foundCode);
+        }
+
+        setFormData({
+          name: business.name || '',
+          category: (business.category as any) || '',
+          address: business.address || '',
+          lat: business.lat || 0,
+          lng: business.lng || 0,
+          phone: business.phone.replace(foundCode?.dial_code || '', '') || '',
+          opening_hours: business.opening_hours || '',
+        });
+      }
+    }
+  }, [business]);
 
   const handleNext = async () => {
     // Validation per step
@@ -88,17 +120,44 @@ export default function OnboardingScreen() {
 
       const fullPhone = `${countryCode.dial_code}${formData.phone.replace(/^0+/, '')}`;
 
-      const business = await businessApi.create({
-        name: formData.name.trim(),
-        address: formData.address.trim(),
-        phone: fullPhone,
-        opening_hours: formData.opening_hours.trim() || 'Mon-Fri 9AM-6PM',
-        category: formData.category || 'other',
-        lat,
-        lng,
-      });
+      // Check if this is a resubmit (business already exists with rejected status)
+      const isResubmit = business && business.verification_status === 'rejected';
 
-      setBusiness(business);
+      let updatedBusiness;
+      if (isResubmit) {
+        // Update existing business and resubmit
+        updatedBusiness = await businessApi.update(business.id, {
+          name: formData.name.trim(),
+          address: formData.address.trim(),
+          phone: fullPhone,
+          opening_hours: formData.opening_hours.trim() || 'Mon-Fri 9AM-6PM',
+          category: formData.category || 'other',
+          lat,
+          lng,
+        });
+        // Resubmit for verification
+        updatedBusiness = await businessApi.resubmit(business.id);
+      } else {
+        // Create new business (automatically sets status to 'pending')
+        updatedBusiness = await businessApi.create({
+          name: formData.name.trim(),
+          address: formData.address.trim(),
+          phone: fullPhone,
+          opening_hours: formData.opening_hours.trim() || 'Mon-Fri 9AM-6PM',
+          category: formData.category || 'other',
+          lat,
+          lng,
+        });
+      }
+
+      setBusiness(updatedBusiness);
+
+      // Show success message
+      Alert.alert(
+        'Request Sent',
+        'We will verify your business and get back to you soon.',
+        [{ text: 'OK' }]
+      );
     } catch (error: any) {
       console.error('Onboarding error:', error);
       Alert.alert('Error', error.message || 'Failed to create business profile');
@@ -133,6 +192,7 @@ export default function OnboardingScreen() {
       subtitle={getStepSubtitle()}
       onBack={currentStep > 0 ? handleBack : undefined}
       showLogout={currentStep === 0}
+      rejectionReason={business?.verification_status === 'rejected' ? business.rejection_reason : undefined}
     >
       {currentStep === 0 && (
         <StepBasicInfo

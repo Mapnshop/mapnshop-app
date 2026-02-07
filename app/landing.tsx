@@ -106,7 +106,7 @@ export default function LandingPage() {
                     {/* Logo */}
                     <TouchableOpacity style={styles.navLogo} onPress={() => router.push('/landing')}>
                         <Image
-                            source={require('@/assets/images/mapnshop_logo.png')}
+                            source={require('@/assets/images/logo.png')}
                             style={styles.navLogoImage}
                             resizeMode="contain"
                         />
@@ -192,7 +192,7 @@ export default function LandingPage() {
 
                         <View style={styles.heroImageContainer}>
                             <Image
-                                source={require('@/assets/images/mapnshop_inbox_mockup.png')}
+                                source={require('@/assets/images/mapnshop_inbox_mockup.jpeg')}
                                 style={styles.heroImage}
                                 resizeMode="contain"
                             />
@@ -320,6 +320,10 @@ export default function LandingPage() {
                     <Text style={styles.earlyAccessText}>
                         Mapnshop is currently in pilot. We're working closely with a small number of local businesses to build the right operational system before expanding.
                     </Text>
+
+                    <Text style={styles.earlyAccessProcess}>
+                        We'll ask a few questions about how you take orders, then onboard you personally.
+                    </Text>
                 </View>
 
                 {/* Final CTA */}
@@ -338,7 +342,7 @@ export default function LandingPage() {
                             <Text style={styles.ctaButtonText}>Request Early Access</Text>
                         </TouchableOpacity>
                         <Text style={styles.ctaSubtext}>
-                            We'll contact you personally to see if Mapnshop is a good fit.
+                            Pilot spots are limited.
                         </Text>
                     </View>
                 </LinearGradient>
@@ -348,7 +352,7 @@ export default function LandingPage() {
                     <View style={[styles.footerContent, isDesktop && styles.footerContentDesktop]}>
                         <View style={styles.footerBrand}>
                             <Image
-                                source={require('@/assets/images/mapnshop_logo.png')}
+                                source={require('@/assets/images/logo.png')}
                                 style={styles.footerLogo}
                                 resizeMode="contain"
                             />
@@ -478,7 +482,7 @@ const styles = StyleSheet.create({
     },
     heroDesktop: {
         paddingTop: 100,
-        paddingBottom: 120,
+        paddingBottom: 140,
     },
     heroContent: {
         maxWidth: 700,
@@ -487,14 +491,20 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     heroContentDesktop: {
+        maxWidth: 1000,
+    },
+    heroImageContainer: {
+        width: '100%',
         maxWidth: 800,
+        height: 400,
+        marginVertical: Layout.spacing.xl * 1.5,
+        alignItems: 'center',
+        justifyContent: 'center',
     },
-    heroIconContainer: {
-        marginBottom: Layout.spacing.xl,
-    },
-    heroLogo: {
-        width: 80,
-        height: 80,
+    heroImage: {
+        width: '100%',
+        height: '100%',
+        borderRadius: Layout.borderRadius.lg,
     },
     heroTitle: {
         fontSize: 40,
@@ -510,15 +520,16 @@ const styles = StyleSheet.create({
         lineHeight: 64,
     },
     heroSubtitle: {
-        fontSize: 19,
+        fontSize: 20,
         color: Colors.text.secondary,
         marginBottom: Layout.spacing.md,
-        lineHeight: 30,
+        lineHeight: 32,
         textAlign: 'center',
+        maxWidth: 600,
     },
     heroSubtitleDesktop: {
-        fontSize: 21,
-        lineHeight: 34,
+        fontSize: 24,
+        lineHeight: 36,
     },
     heroSupporting: {
         fontSize: 16,
@@ -546,13 +557,13 @@ const styles = StyleSheet.create({
         color: '#FFFFFF',
     },
     heroFootnote: {
-        fontSize: 14,
+        fontSize: 15,
         color: Colors.text.placeholder,
         textAlign: 'center',
     },
     // Sections
     section: {
-        paddingVertical: 80,
+        paddingVertical: 100,
         paddingHorizontal: Layout.spacing.lg,
     },
     sectionTitle: {
@@ -560,11 +571,20 @@ const styles = StyleSheet.create({
         fontWeight: '700',
         color: Colors.text.primary,
         textAlign: 'center',
-        marginBottom: Layout.spacing.xl * 1.5,
+        marginBottom: Layout.spacing.md,
         letterSpacing: -0.3,
         lineHeight: 40,
         maxWidth: 800,
         alignSelf: 'center',
+    },
+    sectionSubtitle: {
+        fontSize: 20,
+        color: Colors.text.secondary,
+        textAlign: 'center',
+        marginBottom: Layout.spacing.xl * 2,
+        maxWidth: 600,
+        alignSelf: 'center',
+        lineHeight: 30,
     },
     problemList: {
         maxWidth: 600,
@@ -586,12 +606,12 @@ const styles = StyleSheet.create({
     },
     problemText: {
         flex: 1,
-        fontSize: 17,
+        fontSize: 18,
         color: Colors.text.secondary,
-        lineHeight: 26,
+        lineHeight: 28,
     },
     problemClose: {
-        fontSize: 20,
+        fontSize: 22,
         fontWeight: '600',
         color: Colors.text.primary,
         textAlign: 'center',
@@ -606,25 +626,26 @@ const styles = StyleSheet.create({
         marginBottom: Layout.spacing.xl * 1.5,
     },
     solutionPoint: {
-        fontSize: 17,
-        color: Colors.text.secondary,
+        fontSize: 19,
+        fontWeight: '500',
+        color: Colors.text.primary,
         marginBottom: Layout.spacing.md,
-        lineHeight: 26,
+        lineHeight: 30,
         textAlign: 'center',
     },
     principleBox: {
-        maxWidth: 650,
+        maxWidth: 700,
         alignSelf: 'center',
         backgroundColor: Colors.background,
-        padding: Layout.spacing.xl,
+        padding: Layout.spacing.xl * 1.5,
         borderRadius: Layout.borderRadius.lg,
         borderLeftWidth: 4,
         borderLeftColor: Colors.primary,
     },
     principleText: {
-        fontSize: 17,
+        fontSize: 18,
         color: Colors.text.primary,
-        lineHeight: 28,
+        lineHeight: 30,
         fontStyle: 'italic',
     },
     stepsContainer: {
@@ -656,20 +677,30 @@ const styles = StyleSheet.create({
         color: '#FFFFFF',
     },
     stepTitle: {
-        fontSize: 19,
+        fontSize: 20,
         fontWeight: '600',
         color: Colors.text.primary,
         marginBottom: Layout.spacing.sm,
         textAlign: 'center',
     },
     stepDescription: {
-        fontSize: 15,
+        fontSize: 16,
         color: Colors.text.secondary,
         textAlign: 'center',
-        lineHeight: 22,
+        lineHeight: 24,
     },
     featuresSection: {
         backgroundColor: Colors.surface,
+    },
+    featuresDisclaimer: {
+        fontSize: 18,
+        color: Colors.text.secondary,
+        textAlign: 'center',
+        marginBottom: Layout.spacing.xl * 2,
+        maxWidth: 700,
+        alignSelf: 'center',
+        lineHeight: 28,
+        fontStyle: 'italic',
     },
     featuresGrid: {
         maxWidth: 1000,
@@ -701,15 +732,15 @@ const styles = StyleSheet.create({
         marginBottom: Layout.spacing.md,
     },
     featureTitle: {
-        fontSize: 18,
+        fontSize: 19,
         fontWeight: '600',
         color: Colors.text.primary,
         marginBottom: Layout.spacing.xs,
     },
     featureDescription: {
-        fontSize: 15,
+        fontSize: 16,
         color: Colors.text.secondary,
-        lineHeight: 22,
+        lineHeight: 24,
     },
     businessList: {
         maxWidth: 400,
@@ -717,30 +748,39 @@ const styles = StyleSheet.create({
         marginBottom: Layout.spacing.xl,
     },
     businessItem: {
-        fontSize: 17,
+        fontSize: 18,
         color: Colors.text.secondary,
         marginBottom: Layout.spacing.sm,
         textAlign: 'center',
     },
     businessFootnote: {
-        fontSize: 17,
+        fontSize: 18,
         color: Colors.text.primary,
         textAlign: 'center',
+        lineHeight: 28,
         fontStyle: 'italic',
+        maxWidth: 600,
+        alignSelf: 'center',
     },
     earlyAccessSection: {
         backgroundColor: Colors.surface,
     },
     earlyAccessText: {
-        fontSize: 17,
+        fontSize: 18,
         color: Colors.text.secondary,
-        lineHeight: 28,
+        lineHeight: 30,
         textAlign: 'center',
         maxWidth: 700,
         alignSelf: 'center',
+        marginBottom: Layout.spacing.lg,
+    },
+    earlyAccessProcess: {
+        fontSize: 16,
+        color: Colors.text.placeholder,
+        textAlign: 'center',
     },
     ctaSection: {
-        paddingVertical: 80,
+        paddingVertical: 100,
         paddingHorizontal: Layout.spacing.lg,
     },
     ctaContent: {
@@ -749,7 +789,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     ctaTitle: {
-        fontSize: 32,
+        fontSize: 36,
         fontWeight: '700',
         color: '#FFFFFF',
         textAlign: 'center',

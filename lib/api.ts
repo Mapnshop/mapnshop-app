@@ -129,7 +129,7 @@ export const authApi = {
 
 // Business API
 export const businessApi = {
-  async create(business: Omit<Business, 'id' | 'created_at' | 'owner_id'>) {
+  async create(business: Omit<Business, 'id' | 'created_at' | 'owner_id' | 'verification_status' | 'submitted_at' | 'verified_at' | 'verified_by' | 'rejection_reason'>) {
     const user = await authApi.getCurrentUser();
     if (!user) throw new ApiError('Not authenticated');
 
@@ -138,6 +138,8 @@ export const businessApi = {
       .insert({
         ...business,
         owner_id: user.id,
+        verification_status: 'pending',
+        submitted_at: new Date().toISOString(),
       })
       .select()
       .single();
@@ -203,6 +205,22 @@ export const businessApi = {
     }
 
     return data.businesses as unknown as Business;
+  },
+
+  async resubmit(businessId: string) {
+    const { data, error } = await supabase
+      .from('businesses')
+      .update({
+        verification_status: 'pending',
+        submitted_at: new Date().toISOString(),
+        rejection_reason: null,
+      })
+      .eq('id', businessId)
+      .select()
+      .single();
+
+    if (error) throw new ApiError(error.message);
+    return data as Business;
   }
 };
 
@@ -694,5 +712,84 @@ export const storageApi = {
       console.error('Delete failed:', error);
       throw new ApiError('Failed to delete image: ' + (error.message || JSON.stringify(error)));
     }
+  }
+};
+
+// Profile API
+export const profileApi = {
+  async getCurrentProfile() {
+    const user = await authApi.getCurrentUser();
+    if (!user) throw new ApiError('Not authenticated');
+
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', user.id)
+      .maybeSingle();
+
+    if (error) throw new ApiError(error.message);
+    return data;
+  },
+
+  async isAdmin() {
+    try {
+      const profile = await this.getCurrentProfile();
+      return profile?.role === 'admin';
+    } catch {
+      return false;
+    }
+  }
+};
+
+// Admin API
+export const adminApi = {
+  async listPendingBusinesses() {
+    const { data, error } = await supabase
+      .from('businesses')
+      .select('*')
+      .eq('verification_status', 'pending')
+      .order('submitted_at', { ascending: false });
+
+    if (error) throw new ApiError(error.message);
+    return data as Business[];
+  },
+
+  async approveBusiness(businessId: string) {
+    const user = await authApi.getCurrentUser();
+    if (!user) throw new ApiError('Not authenticated');
+
+    const { data, error } = await supabase
+      .from('businesses')
+      .update({
+        verification_status: 'approved',
+        verified_at: new Date().toISOString(),
+        verified_by: user.id,
+        rejection_reason: null,
+      })
+      .eq('id', businessId)
+      .select()
+      .single();
+
+    if (error) throw new ApiError(error.message);
+    return data as Business;
+  },
+
+  async rejectBusiness(businessId: string, reason: string) {
+    const user = await authApi.getCurrentUser();
+    if (!user) throw new ApiError('Not authenticated');
+
+    const { data, error } = await supabase
+      .from('businesses')
+      .update({
+        verification_status: 'rejected',
+        rejection_reason: reason,
+        verified_by: user.id,
+      })
+      .eq('id', businessId)
+      .select()
+      .single();
+
+    if (error) throw new ApiError(error.message);
+    return data as Business;
   }
 };
