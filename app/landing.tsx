@@ -192,7 +192,7 @@ export default function LandingPage() {
 
                         <View style={styles.heroImageContainer}>
                             <Image
-                                source={require('@/assets/images/mapnshop_inbox_mockup.jpeg')}
+                                source={require('@/assets/images/Hero_section.png')}
                                 style={styles.heroImage}
                                 resizeMode="contain"
                             />
@@ -222,6 +222,14 @@ export default function LandingPage() {
                         When everything is urgent, nothing is clear.
                     </Text>
 
+                    <View style={styles.imageContainer}>
+                        <Image
+                            source={require('@/assets/images/Busy_restaurant_kitchen.png')}
+                            style={styles.contentImage}
+                            resizeMode="contain"
+                        />
+                    </View>
+
                     <View style={styles.problemList}>
                         {problems.map((problem, index) => (
                             <View key={index} style={styles.problemItem}>
@@ -229,6 +237,14 @@ export default function LandingPage() {
                                 <Text style={styles.problemText}>{problem}</Text>
                             </View>
                         ))}
+                    </View>
+
+                    <View style={styles.imageContainer}>
+                        <Image
+                            source={require('@/assets/images/Problem_illustration.png')}
+                            style={styles.contentImage}
+                            resizeMode="contain"
+                        />
                     </View>
 
                     <Text style={styles.problemClose}>
@@ -263,6 +279,14 @@ export default function LandingPage() {
                     <Text style={styles.sectionSubtitle}>
                         No setup. No behavior change. Just clarity.
                     </Text>
+
+                    <View style={styles.imageContainer}>
+                        <Image
+                            source={require('@/assets/images/Three-step_process.png')}
+                            style={styles.contentImage}
+                            resizeMode="contain"
+                        />
+                    </View>
 
                     <View style={[styles.stepsContainer, isDesktop && styles.stepsContainerDesktop]}>
                         {steps.map((step, index) => (
@@ -502,6 +526,21 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     heroImage: {
+        width: '100%',
+        height: '100%',
+        borderRadius: Layout.borderRadius.lg,
+    },
+    // New Image Styles
+    imageContainer: {
+        width: '100%',
+        maxWidth: 800,
+        height: 300,
+        alignSelf: 'center',
+        marginBottom: Layout.spacing.xl,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    contentImage: {
         width: '100%',
         height: '100%',
         borderRadius: Layout.borderRadius.lg,

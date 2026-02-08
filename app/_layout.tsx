@@ -97,6 +97,7 @@ function RootLayoutNav() {
         <Stack.Screen name="auth" />
         <Stack.Screen name="onboarding" />
         <Stack.Screen name="pending-verification" />
+        <Stack.Screen name="support" />
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="order/[id]" />
         <Stack.Screen name="+not-found" />
