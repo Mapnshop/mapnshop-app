@@ -1,6 +1,6 @@
 [build]
   base = "."
-  # command = "npm run build:web"  <-- We are committing 'dist', so we don't need Netlify to rebuild.
+  command = "echo skipping build"
   publish = "dist"
 
 [build.environment]
