@@ -5,6 +5,8 @@ import { Platform } from 'react-native';
 const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co';
 const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || 'placeholder';
 
+console.log('[Supabase] Initializing client with URL:', supabaseUrl ? supabaseUrl.substring(0, 20) + '...' : 'undefined');
+
 // Use platform-specific storage
 const storage = Platform.OS === 'web'
   ? {

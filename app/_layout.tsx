@@ -108,6 +108,7 @@ function RootLayoutNav() {
 }
 
 export default function RootLayout() {
+  console.log('[RootLayout] Mounting...');
   useFrameworkReady();
 
   // Safety Check for Environment Variables
@@ -127,12 +128,12 @@ export default function RootLayout() {
   }
 
   return (
-    <AuthProvider>
-      <BusinessProvider>
-        <ErrorBoundary>
+    <ErrorBoundary>
+      <AuthProvider>
+        <BusinessProvider>
           <RootLayoutNav />
-        </ErrorBoundary>
-      </BusinessProvider>
-    </AuthProvider>
+        </BusinessProvider>
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }
