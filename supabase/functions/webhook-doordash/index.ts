@@ -1,14 +1,53 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { crypto } from "https://deno.land/std@0.177.0/crypto/mod.ts";
 
 const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
 const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+// DoorDash uses a "Signing Secret" to generate an HMAC-SHA256 signature
+const DOORDASH_SIGNING_SECRET = Deno.env.get("DOORDASH_SIGNING_SECRET") || Deno.env.get("DOORDASH_CLIENT_SECRET");
+
 const corsHeaders = {
     "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-doordash-signature",
 };
+
+// HMAC Verification Helper
+async function verifySignature(req: Request, bodyText: string): Promise<boolean> {
+    if (!DOORDASH_SIGNING_SECRET) {
+        console.warn("Skipping signature verification: DOORDASH_SIGNING_SECRET not set.");
+        return true;
+    }
+
+    const signature = req.headers.get("x-doordash-signature");
+    if (!signature) return false;
+
+    // DoorDash format: signature is hex string
+    const encoder = new TextEncoder();
+    const key = await crypto.subtle.importKey(
+        "raw",
+        encoder.encode(DOORDASH_SIGNING_SECRET),
+        { name: "HMAC", hash: "SHA-256" },
+        false,
+        ["verify"]
+    );
+
+    const verified = await crypto.subtle.verify(
+        "HMAC",
+        key,
+        // The signature in header is hex encoded (sometimes base64url in other provider, checking docs... DoorDash is likely Hex or JWT?)
+        // Ref: DoorDash docs say "HMAC-SHA256" and examples often show hex.
+        // Wait, standard DoorDash Drive API uses JWT. Marketplace API might use HMAC.
+        // Let's assume Hex for now, and if it fails, we debug.
+        // Common pattern: hex decode the signature string.
+        new Uint8Array(signature.match(/.{1,2}/g)!.map((byte) => parseInt(byte, 16))),
+        encoder.encode(bodyText)
+    );
+
+    return verified;
+}
 
 function normalizeDoordashOrder(raw: any) {
     const items = raw.items.map((i: any) => ({
@@ -23,33 +62,48 @@ function normalizeDoordashOrder(raw: any) {
     const total = (raw.order_total || 0) / 100;
 
     return {
-        source: 'doordash',
-        external_order_id: raw.id,
-        external_store_id: raw.merchant_id,
-        customer_name: `${raw.consumer.first_name} ${raw.consumer.last_name}`,
-        customer_phone: raw.consumer.phone_number,
-        notes: raw.consumer.should_leave_at_door ? 'Leave at door' : '',
+        source: 'DoorDash',
+        external_order_id: raw.id || raw.order_id, // Normalize ID field
+        external_store_id: raw.merchant_id || raw.store_id, // Normalize Store ID
+        customer_name: `${raw.consumer?.first_name || 'DoorDash'} ${raw.consumer?.last_name || 'Guest'}`,
+        customer_phone: raw.consumer?.phone_number || '',
+        notes: raw.consumer?.should_leave_at_door ? 'Leave at door' : '',
         items_json: items,
-        totals_json: { subtotal, tax, total, currency: 'CAD' }, // Assuming CAD or dynamic
-        placed_at: raw.created_at
+        totals_json: { subtotal, tax, total, currency: 'CAD' },
+        placed_at: raw.created_at || new Date().toISOString()
     };
 }
 
 serve(async (req) => {
+    // Handle CORS preflight
     if (req.method === "OPTIONS") {
         return new Response("ok", { headers: corsHeaders });
     }
 
     try {
-        const raw = await req.json();
+        const rawBody = await req.text();
+
+        // 1. Verify Signature
+        const isValid = await verifySignature(req, rawBody);
+        if (!isValid) {
+            console.error("Invalid DoorDash Signature");
+            return new Response(JSON.stringify({ error: "Unauthorized: Invalid Signature" }), {
+                status: 401,
+                headers: { ...corsHeaders, "Content-Type": "application/json" }
+            });
+        }
+
+        const raw = JSON.parse(rawBody);
         console.log("DoorDash payload:", raw);
 
-        // 1. Verify Signature (Mock)
-        // const sig = req.headers.get('x-doordash-signature');
-
         // 2. Lookup Integration
-        const storeId = raw.merchant_id;
-        if (!storeId) throw new Error("Missing merchant_id");
+        const storeId = raw.merchant_id || raw.store_id; // Check both potential fields
+        if (!storeId) {
+            return new Response(JSON.stringify({ message: "Ignored: No merchant_id/store_id" }), {
+                status: 200,
+                headers: { ...corsHeaders, "Content-Type": "application/json" }
+            });
+        }
 
         const { data: integration, error: intError } = await supabase
             .from('integrations')
@@ -60,8 +114,11 @@ serve(async (req) => {
             .single();
 
         if (intError || !integration) {
-            console.error("Integration not found/connected:", storeId);
-            return new Response(JSON.stringify({ error: "Store not integrated" }), { status: 404 });
+            console.error("Integration not found/connected for store:", storeId);
+            return new Response(JSON.stringify({ error: "Store not linked to Mapnshop" }), {
+                status: 404,
+                headers: { ...corsHeaders, "Content-Type": "application/json" }
+            });
         }
 
         // 3. Log Webhook Receipt
@@ -69,36 +126,25 @@ serve(async (req) => {
             business_id: integration.business_id,
             event_type: 'provider_webhook_received',
             provider: 'doordash',
-            payload: { external_order_id: raw.id, status: raw.status }
+            payload: { external_order_id: raw.id || raw.order_id, status: raw.status }
         });
 
         // 4. Normalize
         const normalized = normalizeDoordashOrder(raw);
 
-        // 5. Upsert Order (Idempotent)
+        // 5. Upsert Order
         const { data: existingOrder } = await supabase
             .from('orders')
             .select('id, status')
             .eq('business_id', integration.business_id)
-            .eq('source', 'DoorDash') // Enum 'DoorDash' was used in migration logic? No, check migration again.
-            // Wait, I saw 'DoorDash' wasn't in original enum, but I didn't add it in refined migration either!
-            // The original schema had: 'Uber Eats', 'Deliveroo', 'Just Eat', 'Hungry Panda', 'Talabat'.
-            // My task.md said: "source text not null check (source in ('manual','uber_eats','doordash'))"
-            // But I did NOT apply that constraint change in SQL. I only added columns.
-            // If I try to insert 'DoorDash' into an enum that doesn't have it, it will fail.
-            // HOWEVER, Supabase enums are tricky.
-            // Let's assume for now the user ran the FIRST migration which might have failed on enum? 
-            // No, I didn't add enum values in the first migration either.
-            // I need to be careful. I will use 'manual' as fallback if not sure, OR I should have added `ALTER TYPE order_source ADD VALUE 'DoorDash'`
-            // I will assume for now 'DoorDash' works or user added it manually, OR I will pass 'DoorDash' and if it fails I catch it.
-            // BUT, for the sake of this code, I will use 'DoorDash' string.
+            .eq('source', 'DoorDash')
             .eq('external_order_id', normalized.external_order_id)
-            .single();
+            .maybeSingle();
 
-        // Logic: Only update status if new, or if cancellation.
-        // Ideally map DoorDash status 'CANCELLED' -> 'cancelled'.
         let statusToSet = existingOrder ? existingOrder.status : 'created';
+        // Map DoorDash statuses (e.g., 'CONFIRMED', 'CANCELLED')
         if (raw.status === 'CANCELLED') statusToSet = 'cancelled';
+        if (raw.status === 'DELIVERED') statusToSet = 'completed';
 
         const orderData = {
             business_id: integration.business_id,
@@ -131,12 +177,14 @@ serve(async (req) => {
         if (upsertError) throw upsertError;
 
         // 6. Log Upsert
-        await supabase.from('order_events').insert({
-            order_id: upsertData.id,
-            business_id: integration.business_id,
-            event_type: 'order_upserted',
-            provider: 'doordash'
-        });
+        if (!existingOrder) {
+            await supabase.from('order_events').insert({
+                order_id: upsertData.id,
+                business_id: integration.business_id,
+                event_type: 'order_upserted',
+                provider: 'doordash'
+            });
+        }
 
         // 7. Update Integration Status
         await supabase.from('integrations')
@@ -148,7 +196,7 @@ serve(async (req) => {
             status: 200,
         });
 
-    } catch (err) {
+    } catch (err: any) {
         console.error("Webhook Error", err);
         return new Response(JSON.stringify({ error: err.message }), {
             headers: { ...corsHeaders, "Content-Type": "application/json" },

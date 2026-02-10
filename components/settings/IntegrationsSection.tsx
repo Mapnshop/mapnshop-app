@@ -153,6 +153,34 @@ export const IntegrationsSection = () => {
         const isConnected = integration?.status === 'connected';
         const isError = integration?.status === 'error';
 
+        // DoorDash Coming Soon Logic
+        if (provider === 'doordash') {
+            return (
+                <View style={[styles.item, { opacity: 0.6 }]}>
+                    <View style={styles.itemContent}>
+                        <View style={styles.logoWrapper}>
+                            <Image source={logo} style={styles.logo} resizeMode="contain" />
+                        </View>
+
+                        <View style={styles.infoColumn}>
+                            <Text style={styles.providerName}>{name}</Text>
+                            <View style={styles.statusRow}>
+                                <View style={[styles.statusBadge, { backgroundColor: '#F3F4F6' }]}>
+                                    <Text style={[styles.statusTextDisconnected, { fontSize: 11, fontWeight: '600' }]}>Coming Soon</Text>
+                                </View>
+                            </View>
+                        </View>
+
+                        <View style={styles.actions}>
+                            <View style={{ backgroundColor: '#F3F4F6', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 20 }}>
+                                <Text style={{ fontSize: 12, color: '#6B7280', fontWeight: '600' }}>Soon</Text>
+                            </View>
+                        </View>
+                    </View>
+                </View>
+            );
+        }
+
         return (
             <View style={styles.item}>
                 <View style={styles.itemContent}>
@@ -221,6 +249,7 @@ export const IntegrationsSection = () => {
                     <View style={styles.card}>
                         {renderIntegrationItem('uber_eats', 'Uber Eats', UberLogo)}
                         <View style={styles.divider} />
+                        {/* Direct render for debugging if loop issue, but here we call function */}
                         {renderIntegrationItem('doordash', 'DoorDash', DoorDashLogo)}
                     </View>
                 )}
