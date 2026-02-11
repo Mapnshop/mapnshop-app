@@ -10,7 +10,7 @@ import { Layout } from '@/constants/Layout';
 
 // Asset Imports
 const UberLogo = require('../../assets/images/uber-eats-logo.png');
-// const DoorDashLogo = require('../../assets/images/doordash-logo.png');
+const DoorDashLogo = require('../../assets/images/doordash-logo.png');
 
 interface Integration {
     id: string;
@@ -250,7 +250,7 @@ export const IntegrationsSection = () => {
                         {renderIntegrationItem('uber_eats', 'Uber Eats', UberLogo)}
                         <View style={styles.divider} />
                         {/* Direct render for debugging if loop issue, but here we call function */}
-                        {/* {renderIntegrationItem('doordash', 'DoorDash', DoorDashLogo)} */}
+                        {renderIntegrationItem('doordash', 'DoorDash', DoorDashLogo)}
                     </View>
                 )}
 
@@ -271,8 +271,8 @@ export const IntegrationsSection = () => {
                         <View style={styles.modalHeader}>
                             <View style={styles.modalTitleRow}>
                                 <Image
-                                    source={UberLogo} // Force Uber logo for now to avoid crash
-                                    // source={selectedProvider === 'uber_eats' ? UberLogo : DoorDashLogo}
+                                    // source={UberLogo} // Force Uber logo for now to avoid crash
+                                    source={selectedProvider === 'uber_eats' ? UberLogo : DoorDashLogo}
                                     style={styles.modalLogo}
                                     resizeMode="contain"
                                 />
