@@ -250,7 +250,7 @@ export const IntegrationsSection = () => {
                         {renderIntegrationItem('uber_eats', 'Uber Eats', UberLogo)}
                         <View style={styles.divider} />
                         {/* Direct render for debugging if loop issue, but here we call function */}
-                        {renderIntegrationItem('doordash', 'DoorDash', DoorDashLogo)}
+                        {/* {renderIntegrationItem('doordash', 'DoorDash', DoorDashLogo)} */}
                     </View>
                 )}
 
