@@ -1,6 +1,6 @@
 [build]
   base = "."
-  command = "echo skipping build"
+  command = "npm run build:web"
   publish = "dist"
 
 [build.environment]
