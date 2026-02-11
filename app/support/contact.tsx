@@ -66,7 +66,7 @@ export default function ContactPage() {
                             </View>
                             <View>
                                 <Text style={styles.methodTitle}>Email</Text>
-                                <Text style={styles.methodValue}>hello@mapnshop.com</Text>
+                                <Text style={styles.methodValue}>hello@mapnshop.co</Text>
                             </View>
                         </View>
 
@@ -76,7 +76,7 @@ export default function ContactPage() {
                             </View>
                             <View>
                                 <Text style={styles.methodTitle}>Support</Text>
-                                <Text style={styles.methodValue}>support@mapnshop.com</Text>
+                                <Text style={styles.methodValue}>support@mapnshop.co</Text>
                             </View>
                         </View>
                     </View>
