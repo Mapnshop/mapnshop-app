@@ -9,7 +9,7 @@ import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
 
 function RootLayoutNav() {
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, isPasswordRecovery } = useAuth();
   const { business, loading: businessLoading } = useBusiness();
   const segments = useSegments();
   const router = useRouter();
@@ -19,6 +19,15 @@ function RootLayoutNav() {
 
   useEffect(() => {
     if (authLoading || businessLoading) return;
+
+    // Password Recovery Priority
+    if (isPasswordRecovery) {
+      if (segments[0] !== 'reset-password') {
+        console.log('Redirecting to /reset-password');
+        router.replace('/reset-password');
+      }
+      return;
+    }
 
     const inAuthGroup = segments[0] === 'auth';
     const inOnboarding = segments[0] === 'onboarding';
@@ -95,6 +104,7 @@ function RootLayoutNav() {
         <Stack.Screen name="index" />
         <Stack.Screen name="landing" />
         <Stack.Screen name="auth" />
+        <Stack.Screen name="reset-password" />
         <Stack.Screen name="onboarding" />
         <Stack.Screen name="pending-verification" />
         <Stack.Screen name="support" />

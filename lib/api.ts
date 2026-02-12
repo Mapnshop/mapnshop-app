@@ -48,7 +48,7 @@ export const authApi = {
 
   async resetPassword(email: string) {
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: 'https://example.com/update-password',
+      redirectTo: 'https://mapnshop.co',
     });
     if (error) throw new ApiError(error.message);
   },
