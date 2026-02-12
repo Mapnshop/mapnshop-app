@@ -22,7 +22,12 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isPasswordRecovery, setIsPasswordRecovery] = useState(false);
+  const [isPasswordRecovery, setIsPasswordRecovery] = useState(() => {
+    if (Platform.OS === 'web' && typeof window !== 'undefined') {
+      return window.location.href.includes('type=recovery');
+    }
+    return false;
+  });
 
   useEffect(() => {
     // Get initial session
@@ -44,7 +49,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         if (event === 'PASSWORD_RECOVERY') {
           setIsPasswordRecovery(true);
-        } else if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
+        } else if (event === 'SIGNED_OUT') {
           setIsPasswordRecovery(false);
         }
       }
