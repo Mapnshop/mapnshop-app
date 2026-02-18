@@ -23,11 +23,10 @@ serve(async (req) => {
         const { data: { user }, error: authError } = await supabase.auth.getUser(authHeader.replace('Bearer ', ''));
         if (authError || !user) throw new Error('Unauthorized');
 
-        const { provider, business_id, external_store_id, api_key, api_secret } = await req.json();
+        const { provider, business_id, external_store_id, api_key, api_secret, client_id, client_secret } = await req.json();
 
         // 2. Validate Membership (RLS check via Service Role)
-        // Ensure this user actually OWNS or ADMINS this business.
-        const { data: membership, error: memError } = await supabase
+        const { data: membership } = await supabase
             .from('business_members')
             .select('role')
             .eq('business_id', business_id)
@@ -35,7 +34,6 @@ serve(async (req) => {
             .in('role', ['owner', 'admin'])
             .single();
 
-        // Also check if owner directly via businesses table
         const { data: businessOwner } = await supabase
             .from('businesses')
             .select('owner_id')
@@ -47,16 +45,52 @@ serve(async (req) => {
             return new Response(JSON.stringify({ error: "Unauthorized access to business" }), { status: 403, headers: corsHeaders });
         }
 
-        // 3. Encrypt Credentials (Mock Encryption for MVP)
-        // In production, use Web Crypto API or a dedicated secrets manager.
-        // For MVP, we JSON stringify. The security comes from RLS (client can't read the column).
+        // 3. Verify Credentials (Provider Specific)
+        if (provider === 'uber_eats') {
+            if (!client_id || !client_secret || !external_store_id) {
+                return new Response(JSON.stringify({ error: "Missing Client ID, Secret or Store ID" }), { status: 400, headers: corsHeaders });
+            }
+
+            // Verify with Uber
+            try {
+                const tokenResp = await fetch('https://login.uber.com/oauth/v2/token', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams({
+                        client_id,
+                        client_secret,
+                        grant_type: 'client_credentials',
+                        scope: 'eats.store.orders.read eats.order' // Minimum scope to check validity
+                    })
+                });
+
+                if (!tokenResp.ok) {
+                    const err = await tokenResp.json();
+                    console.error("Uber Auth Failed:", err);
+                    return new Response(JSON.stringify({ error: "Invalid Uber Credentials: " + (err.error_description || err.error) }), { status: 400, headers: corsHeaders });
+                }
+
+                // If success, we don't need the token yet, just confirmed creds are good.
+            } catch (authErr) {
+                console.error("Uber Auth Network Error:", authErr);
+                return new Response(JSON.stringify({ error: "Failed to reach Uber for verification" }), { status: 502, headers: corsHeaders });
+            }
+        }
+
+        // 4. Encrypt Credentials (Mock Encryption for MVP)
+        // Store the correct fields based on provider
+        const credentialsPayload = provider === 'uber_eats'
+            ? { client_id, client_secret }
+            : { api_key, api_secret };
+
         const credentials = JSON.stringify({
-            api_key,
-            api_secret,
+            ...credentialsPayload,
             created_at: new Date().toISOString()
         });
 
-        // 4. Upsert Integration
+        // 5. Upsert Integration
         const { error: upsertError } = await supabase
             .from('integrations')
             .upsert({

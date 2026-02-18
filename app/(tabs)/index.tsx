@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { View, Text, StyleSheet, FlatList, RefreshControl, TextInput, TouchableOpacity, Platform, useWindowDimensions } from 'react-native';
+import { View, Text, StyleSheet, FlatList, RefreshControl, TextInput, TouchableOpacity, Platform, useWindowDimensions, ScrollView } from 'react-native';
 import { useBusiness } from '@/contexts/BusinessContext';
 import { ordersApi } from '@/lib/api';
 import { supabase } from '@/lib/supabase';
@@ -187,7 +187,11 @@ export default function InboxScreen() {
           </View>
 
           {/* Status Filters */}
-          <View style={styles.filterRow}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.filterRow}
+          >
             {(['active', 'completed', 'cancelled', 'all'] as FilterType[]).map((f) => (
               <TouchableOpacity
                 key={f}
@@ -207,10 +211,14 @@ export default function InboxScreen() {
                 </Text>
               </TouchableOpacity>
             ))}
-          </View>
+          </ScrollView>
 
           {/* Source Filters */}
-          <View style={[styles.filterRow, { marginTop: 12 }]}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={[styles.filterRow, { marginTop: 12 }]}
+          >
             {(['all', 'manual', 'uber_eats', 'doordash'] as SourceFilterType[]).map((s) => (
               <TouchableOpacity
                 key={s}
@@ -234,7 +242,7 @@ export default function InboxScreen() {
                 </Text>
               </TouchableOpacity>
             ))}
-          </View>
+          </ScrollView>
         </View>
       </View>
 

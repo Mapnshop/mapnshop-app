@@ -12,6 +12,7 @@ export default function AuthScreen() {
   const { signIn, signUp, resetPassword, user } = useAuth();
   const [activeTab, setActiveTab] = useState<'signin' | 'signup'>('signin');
   const [loading, setLoading] = useState(false);
+  const [resending, setResending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Password Reset State
@@ -98,6 +99,31 @@ export default function AuthScreen() {
     }
   };
 
+  const handleResendVerification = async () => {
+    if (!formData.email.trim()) {
+      Alert.alert('Required', 'Please enter your email address to resend verification.');
+      return;
+    }
+
+    setResending(true);
+    try {
+      // Using direct import to avoid modifying context for now, or assume it's in authApi which context uses?
+      // Actually comp imported useAuth, let's see if we should add it there or just use api directly.
+      // To keep it clean, let's use the api directly here or add to context.
+      // Since context wraps api, let's just import api here for this specific action to avoid touching context if not needed,
+      // OR better, since we can't easily change context in this flow without seeing it, let's use the api directly import.
+      // Wait, I don't have authApi imported in this file.
+      // Let's import authApi.
+      const { authApi } = require('@/lib/api');
+      await authApi.resendVerificationEmail(formData.email.trim());
+      Alert.alert('Success', 'Verification email sent! Please check your inbox.');
+    } catch (error: any) {
+      Alert.alert('Error', error.message || 'Failed to resend verification email.');
+    } finally {
+      setResending(false);
+    }
+  };
+
   return (
     <ScreenContainer scrollable>
       <View style={styles.header}>
@@ -141,8 +167,14 @@ export default function AuthScreen() {
             <View style={styles.errorContainer}>
               <Text style={styles.errorText}>{error}</Text>
               {error.includes('Email not confirmed') && (
-                <TouchableOpacity style={{ marginTop: 8 }} onPress={() => Alert.alert('Coming Soon', 'Resend logic requires additional Supabase setup defined in API.')}>
-                  <Text style={{ textAlign: 'center', color: Colors.primary, fontWeight: '600' }}>Resend Verification Email</Text>
+                <TouchableOpacity
+                  style={{ marginTop: 8 }}
+                  onPress={handleResendVerification}
+                  disabled={resending}
+                >
+                  <Text style={{ textAlign: 'center', color: Colors.primary, fontWeight: '600' }}>
+                    {resending ? 'Sending...' : 'Resend Verification Email'}
+                  </Text>
                 </TouchableOpacity>
               )}
             </View>

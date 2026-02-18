@@ -8,10 +8,22 @@
             "distribution": "internal"
         },
         "preview": {
-            "distribution": "internal"
+            "distribution": "internal",
+            "env": {
+                "EXPO_PUBLIC_SUPABASE_URL": "https://xdawpilzaxttvdjdewro.supabase.co",
+                "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_PbxfVSXFKH23vMWXtjTRSw_q5ULLypi",
+                "EXPO_PUBLIC_GOOGLE_MAPS_API_KEY": "AIzaSyCZPIVkfM3Vo0VwpgVawCj8JdV-V1KfUV4",
+                "EXPO_PUBLIC_GOOGLE_PLACES_API_KEY": "AIzaSyCZPIVkfM3Vo0VwpgVawCj8JdV-V1KfUV4"
+            }
         },
         "production": {
-            "distribution": "store"
+            "distribution": "store",
+            "env": {
+                "EXPO_PUBLIC_SUPABASE_URL": "https://xdawpilzaxttvdjdewro.supabase.co",
+                "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_PbxfVSXFKH23vMWXtjTRSw_q5ULLypi",
+                "EXPO_PUBLIC_GOOGLE_MAPS_API_KEY": "AIzaSyCZPIVkfM3Vo0VwpgVawCj8JdV-V1KfUV4",
+                "EXPO_PUBLIC_GOOGLE_PLACES_API_KEY": "AIzaSyCZPIVkfM3Vo0VwpgVawCj8JdV-V1KfUV4"
+            }
         }
     },
     "submit": {

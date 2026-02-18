@@ -59,6 +59,17 @@ export const authApi = {
     return data;
   },
 
+  async resendVerificationEmail(email: string) {
+    const { error } = await supabase.auth.resend({
+      type: 'signup',
+      email,
+      options: {
+        emailRedirectTo: 'https://mapnshop.co',
+      }
+    });
+    if (error) throw new ApiError(error.message);
+  },
+
   async deleteUser() {
     // 1. Get the current user and their business
     const user = await this.getCurrentUser();

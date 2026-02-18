@@ -33,7 +33,9 @@ export const IntegrationsSection = () => {
 
     // Form State
     const [storeId, setStoreId] = useState('');
-    const [apiKey, setApiKey] = useState('');
+    const [clientId, setClientId] = useState('');
+    const [clientSecret, setClientSecret] = useState('');
+    const [apiKey, setApiKey] = useState(''); // DoorDash Legacy / Simple API Key
     const [saving, setSaving] = useState(false);
 
     useEffect(() => {
@@ -84,6 +86,8 @@ export const IntegrationsSection = () => {
         const existing = integrations.find(i => i.provider === provider);
         setStoreId(existing?.external_store_id || '');
         setApiKey(''); // Never load existing secrets
+        setClientId('');
+        setClientSecret('');
         setSelectedProvider(provider);
         setModalVisible(true);
     };
@@ -104,7 +108,9 @@ export const IntegrationsSection = () => {
                     business_id: businessData.id,
                     provider: selectedProvider,
                     external_store_id: storeId,
-                    api_key: apiKey
+                    api_key: apiKey,
+                    client_id: clientId,
+                    client_secret: clientSecret
                 }
             });
 
@@ -296,13 +302,32 @@ export const IntegrationsSection = () => {
                                 value={storeId}
                                 onChangeText={setStoreId}
                             />
-                            <Input
-                                label="API Key (Secret)"
-                                placeholder="••••••••••••••••"
-                                value={apiKey}
-                                onChangeText={setApiKey}
-                                secureTextEntry
-                            />
+
+                            {selectedProvider === 'uber_eats' ? (
+                                <>
+                                    <Input
+                                        label="Client ID"
+                                        placeholder="Enter your Uber Client ID"
+                                        value={clientId}
+                                        onChangeText={setClientId}
+                                    />
+                                    <Input
+                                        label="Client Secret"
+                                        placeholder="••••••••••••••••"
+                                        value={clientSecret}
+                                        onChangeText={setClientSecret}
+                                        secureTextEntry
+                                    />
+                                </>
+                            ) : (
+                                <Input
+                                    label="API Key (Secret)"
+                                    placeholder="••••••••••••••••"
+                                    value={apiKey}
+                                    onChangeText={setApiKey}
+                                    secureTextEntry
+                                />
+                            )}
                         </View>
 
                         <View style={styles.modalFooter}>

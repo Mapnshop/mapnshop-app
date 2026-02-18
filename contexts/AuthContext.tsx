@@ -35,8 +35,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       setLoading(false);
-    }).catch((err) => {
+    }).catch(async (err) => {
       console.error('Auth session init error:', err);
+      if (err?.message?.includes('Refresh Token Not Found') || err?.message?.includes('Invalid Refresh Token')) {
+        // Clear storage to prevent infinite error loops
+        try {
+          setUser(null);
+          const keys = await AsyncStorage.getAllKeys();
+          const supabaseKeys = keys.filter(key => key.startsWith('sb-') || key.includes('supabase'));
+          if (supabaseKeys.length > 0) {
+            await AsyncStorage.multiRemove(supabaseKeys);
+          }
+        } catch (e) {
+          console.error('Failed to clear local storage during error handling:', e);
+        }
+      }
       setUser(null);
       setLoading(false);
     });
