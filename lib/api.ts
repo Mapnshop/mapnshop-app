@@ -232,6 +232,12 @@ export const businessApi = {
 
     if (error) throw new ApiError(error.message);
     return data as Business;
+  },
+
+  async checkNameExists(name: string) {
+    const { data, error } = await supabase.rpc('check_business_name_exists', { name_to_check: name });
+    if (error) throw new ApiError(error.message);
+    return data as boolean;
   }
 };
 
