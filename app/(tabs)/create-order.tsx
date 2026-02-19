@@ -37,7 +37,7 @@ export default function CreateOrderScreen() {
     tax: '', // calculated or default
     delivery_fee: '', // default
     delivery_required: false,
-    source: 'manual' as 'manual' | 'phone' | 'whatsapp' | 'walk-in' | 'Uber Eats' | 'Deliveroo' | 'Just Eat' | 'Hungry Panda' | 'Talabat',
+    source: 'manual' as 'manual' | 'phone' | 'whatsapp' | 'check-in' | 'instagram' | 'walk-in' | 'Uber Eats' | 'Deliveroo' | 'Just Eat' | 'Hungry Panda' | 'Talabat' | string,
   });
 
   // Load defaults when business loads

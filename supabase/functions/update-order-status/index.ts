@@ -229,3 +229,7 @@ serve(async (req) => {
                 });
             }
         }
+    } catch (err: any) {
+        return new Response(JSON.stringify({ error: err.message }), { status: 500, headers: corsHeaders });
+    }
+});
