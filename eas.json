@@ -10,19 +10,19 @@
         "preview": {
             "distribution": "internal",
             "env": {
-                "EXPO_PUBLIC_SUPABASE_URL": "https://xdawpilzaxttvdjdewro.supabase.co",
-                "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_PbxfVSXFKH23vMWXtjTRSw_q5ULLypi",
-                "EXPO_PUBLIC_GOOGLE_MAPS_API_KEY": "AIzaSyCZPIVkfM3Vo0VwpgVawCj8JdV-V1KfUV4",
-                "EXPO_PUBLIC_GOOGLE_PLACES_API_KEY": "AIzaSyCZPIVkfM3Vo0VwpgVawCj8JdV-V1KfUV4"
+                "EXPO_PUBLIC_SUPABASE_URL": "https://cvsxjzhzxtrvqfjltuzc.supabase.co",
+                "EXPO_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN2c3hqemh6eHRydnFfamx0dXpjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzgyNjE4MzIsImV4cCI6MjA1MzgzNzgzMn0.1k-1k-1k-1k-1k-1k-1k-1k-1k-1k-1k-1k-1k-1k-1k",
+                "EXPO_PUBLIC_GOOGLE_MAPS_API_KEY": "$EXPO_PUBLIC_GOOGLE_MAPS_API_KEY",
+                "EXPO_PUBLIC_GOOGLE_PLACES_API_KEY": "$EXPO_PUBLIC_GOOGLE_PLACES_API_KEY"
             }
         },
         "production": {
             "distribution": "store",
             "env": {
-                "EXPO_PUBLIC_SUPABASE_URL": "https://xdawpilzaxttvdjdewro.supabase.co",
-                "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_PbxfVSXFKH23vMWXtjTRSw_q5ULLypi",
-                "EXPO_PUBLIC_GOOGLE_MAPS_API_KEY": "AIzaSyCZPIVkfM3Vo0VwpgVawCj8JdV-V1KfUV4",
-                "EXPO_PUBLIC_GOOGLE_PLACES_API_KEY": "AIzaSyCZPIVkfM3Vo0VwpgVawCj8JdV-V1KfUV4"
+                "EXPO_PUBLIC_SUPABASE_URL": "https://cvsxjzhzxtrvqfjltuzc.supabase.co",
+                "EXPO_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN2c3hqemh6eHRydnFfamx0dXpjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzgyNjE4MzIsImV4cCI6MjA1MzgzNzgzMn0.1k-1k-1k-1k-1k-1k-1k-1k-1k-1k-1k-1k-1k-1k-1k",
+                "EXPO_PUBLIC_GOOGLE_MAPS_API_KEY": "$EXPO_PUBLIC_GOOGLE_MAPS_API_KEY",
+                "EXPO_PUBLIC_GOOGLE_PLACES_API_KEY": "$EXPO_PUBLIC_GOOGLE_PLACES_API_KEY"
             }
         }
     },
